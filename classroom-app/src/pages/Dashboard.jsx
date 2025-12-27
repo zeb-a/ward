@@ -3,7 +3,7 @@ import { Link, Outlet, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext.jsx';
 
 export const Dashboard = () => {
-  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(true); // Start with sidebar open on desktop
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
 
@@ -36,10 +36,12 @@ export const Dashboard = () => {
             z-index: 1000;
           }
           .sidebar.collapsed {
-            transform: translateX(-100%) !important;
+            width: 0px !important;
+            overflow: hidden;
           }
           .sidebar.expanded {
-            transform: translateX(0) !important;
+            width: 240px !important;
+            overflow: visible;
           }
           .main-content {
             margin-left: 0;
@@ -51,9 +53,6 @@ export const Dashboard = () => {
         @media (min-width: 769px) {
           .sidebar {
             width: 240px;
-          }
-          .main-content {
-            margin-left: 240px;
           }
           .hamburger-menu {
             display: none !important;
@@ -75,11 +74,13 @@ export const Dashboard = () => {
       </style>
       {/* Sidebar */}
       <div className={getSidebarClass()} style={{
-        width: sidebarOpen ? '240px' : '60px',
+        width: typeof window !== 'undefined' && window.innerWidth <= 768 ? 
+          (sidebarOpen ? '240px' : '0px') : 
+          '240px', // Always 240px on desktop
         background: 'rgba(255,255,255,0.72)',
         backdropFilter: 'blur(12px)',
         borderRight: '1px solid rgba(11,18,32,0.06)',
-        padding: sidebarOpen ? '20px' : '20px 10px',
+        padding: '20px',
         position: 'fixed',
         height: '100vh',
         display: 'flex',
@@ -255,8 +256,13 @@ export const Dashboard = () => {
   </div>
 
   {/* Main Content */}
-  <div style={{ flex: 1, marginLeft: sidebarOpen ? '240px' : '60px', transition: 'margin-left 0.3s ease' }}>
-  <div className="main-content" style={{ flex: 1 }}>
+  <div style={{ 
+    flex: 1, 
+    marginLeft: '240px', 
+    transition: 'margin-left 0.3s ease',
+    width: 'calc(100% - 240px)'
+  }}>
+  <div className="main-content" style={{ flex: 1, width: '100%' }}>
     <header style={{
       padding: '20px 30px',
       borderBottom: '1px solid rgba(11,18,32,0.06)',
