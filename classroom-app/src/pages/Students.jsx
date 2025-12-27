@@ -8,6 +8,23 @@ export const Students = () => {
   const [newStudent, setNewStudent] = useState({ name: '', class_id: '' });
   const [classes, setClasses] = useState([]);
 
+  return (
+    <>
+      <style>{`
+        .btn-hover {
+          transition: transform 0.28s ease;
+        }
+        .btn-hover:hover {
+          transform: scale(1.04);
+        }
+        .card-hover {
+          transition: transform 0.28s ease;
+        }
+        .card-hover:hover {
+          transform: translateY(-2px);
+        }
+      `}</style>
+
   // Fetch students and classes
   useEffect(() => {
     const fetchData = async () => {
