@@ -20,9 +20,47 @@ export const Dashboard = () => {
       color: '#0b1220',
       background: 'radial-gradient(1200px 600px at 10% 10%, rgba(123,76,255,0.06), transparent 20%), linear-gradient(180deg,#f7fbff,#fff8ff)'
     }}>
+      <style>{`
+        @media (max-width: 768px) {
+          .sidebar {
+            width: 240px;
+            transform: ${sidebarOpen ? 'translateX(0)' : 'translateX(-100%)'};
+            left: 0;
+            z-index: 1000;
+          }
+          .main-content {
+            margin-left: 0;
+          }
+          .hamburger-menu {
+            display: block !important;
+          }
+        }
+        @media (min-width: 769px) {
+          .sidebar {
+            width: 240px;
+          }
+          .main-content {
+            margin-left: 240px;
+          }
+          .hamburger-menu {
+            display: none !important;
+          }
+        }
+        .card-hover {
+          transition: transform 0.28s ease;
+        }
+        .card-hover:hover {
+          transform: translateY(-4px) scale(1.02);
+        }
+        .nav-link-hover:hover {
+          background: rgba(107,70,255,0.06) !important;
+        }
+        .signout-hover:hover {
+          background: rgba(239,68,68,0.06) !important;
+        }
+      `}</style>
       {/* Sidebar */}
-      <div style={{
-        width: '240px',
+      <div className="sidebar" style={{
         background: 'rgba(255,255,255,0.72)',
         backdropFilter: 'blur(12px)',
         borderRight: '1px solid rgba(11,18,32,0.06)',
@@ -31,7 +69,8 @@ export const Dashboard = () => {
         height: '100vh',
         display: 'flex',
         flexDirection: 'column',
-        zIndex: 100
+        zIndex: 100,
+        transition: 'transform 0.3s ease'
       }}>
         <div style={{ marginBottom: '24px' }}>
           <div style={{
@@ -71,6 +110,7 @@ export const Dashboard = () => {
             <li style={{ marginBottom: '4px' }}>
               <Link 
                 to="/dashboard"
+                className="nav-link-hover"
                 style={{
                   display: 'block',
                   padding: '10px 12px',
@@ -78,10 +118,9 @@ export const Dashboard = () => {
                   textDecoration: 'none',
                   color: '#6b7280',
                   fontWeight: '500',
-                  transition: '0.2s'
+                  transition: '0.2s',
+                  background: 'transparent'
                 }}
-                onMouseEnter={(e) => e.target.style.background = 'rgba(107,70,255,0.06)'}
-                onMouseLeave={(e) => e.target.style.background = 'transparent'}
               >
                 🏠 Dashboard
               </Link>
@@ -89,6 +128,7 @@ export const Dashboard = () => {
             <li style={{ marginBottom: '4px' }}>
               <Link 
                 to="/dashboard/students"
+                className="nav-link-hover"
                 style={{
                   display: 'block',
                   padding: '10px 12px',
@@ -96,10 +136,9 @@ export const Dashboard = () => {
                   textDecoration: 'none',
                   color: '#6b7280',
                   fontWeight: '500',
-                  transition: '0.2s'
+                  transition: '0.2s',
+                  background: 'transparent'
                 }}
-                onMouseEnter={(e) => e.target.style.background = 'rgba(107,70,255,0.06)'}
-                onMouseLeave={(e) => e.target.style.background = 'transparent'}
               >
                 👥 Students
               </Link>
@@ -107,6 +146,7 @@ export const Dashboard = () => {
             <li style={{ marginBottom: '4px' }}>
               <Link 
                 to="/dashboard/classes"
+                className="nav-link-hover"
                 style={{
                   display: 'block',
                   padding: '10px 12px',
@@ -114,10 +154,9 @@ export const Dashboard = () => {
                   textDecoration: 'none',
                   color: '#6b7280',
                   fontWeight: '500',
-                  transition: '0.2s'
+                  transition: '0.2s',
+                  background: 'transparent'
                 }}
-                onMouseEnter={(e) => e.target.style.background = 'rgba(107,70,255,0.06)'}
-                onMouseLeave={(e) => e.target.style.background = 'transparent'}
               >
                 🏫 Classes
               </Link>
@@ -125,6 +164,7 @@ export const Dashboard = () => {
             <li style={{ marginBottom: '4px' }}>
               <Link 
                 to="/dashboard/rewards"
+                className="nav-link-hover"
                 style={{
                   display: 'block',
                   padding: '10px 12px',
@@ -132,10 +172,9 @@ export const Dashboard = () => {
                   textDecoration: 'none',
                   color: '#6b7280',
                   fontWeight: '500',
-                  transition: '0.2s'
+                  transition: '0.2s',
+                  background: 'transparent'
                 }}
-                onMouseEnter={(e) => e.target.style.background = 'rgba(107,70,255,0.06)'}
-                onMouseLeave={(e) => e.target.style.background = 'transparent'}
               >
                 🏆 Rewards
               </Link>
@@ -143,24 +182,25 @@ export const Dashboard = () => {
             <li style={{ marginBottom: '4px' }}>
               <Link 
                 to="/dashboard/games"
+                className="nav-link-hover"
                 style={{
                   display: 'block',
-              padding: '10px 12px',
-              borderRadius: '10px',
-              textDecoration: 'none',
-              color: '#6b7280',
-              fontWeight: '500',
-              transition: '0.2s'
-            }}
-            onMouseEnter={(e) => e.target.style.background = 'rgba(107,70,255,0.06)'}
-            onMouseLeave={(e) => e.target.style.background = 'transparent'}
-          >
-            🎮 Games
-          </Link>
-        </li>
+                  padding: '10px 12px',
+                  borderRadius: '10px',
+                  textDecoration: 'none',
+                  color: '#6b7280',
+                  fontWeight: '500',
+                  transition: '0.2s',
+                  background: 'transparent'
+                }}
+              >
+                🎮 Games
+              </Link>
+            </li>
         <li style={{ marginBottom: '4px' }}>
           <Link 
             to="/dashboard/reports"
+            className="nav-link-hover"
             style={{
               display: 'block',
               padding: '10px 12px',
@@ -168,10 +208,9 @@ export const Dashboard = () => {
               textDecoration: 'none',
               color: '#6b7280',
               fontWeight: '500',
-              transition: '0.2s'
+              transition: '0.2s',
+              background: 'transparent'
             }}
-            onMouseEnter={(e) => e.target.style.background = 'rgba(107,70,255,0.06)'}
-            onMouseLeave={(e) => e.target.style.background = 'transparent'}
           >
             📊 Reports
           </Link>
@@ -182,6 +221,7 @@ export const Dashboard = () => {
     <div style={{ marginTop: 'auto', paddingTop: '20px', borderTop: '1px solid rgba(11,18,32,0.06)' }}>
       <button
         onClick={handleSignOut}
+        className="signout-hover"
         style={{
           width: '100%',
           padding: '10px 12px',
@@ -193,8 +233,6 @@ export const Dashboard = () => {
           cursor: 'pointer',
           transition: '0.2s'
         }}
-        onMouseEnter={(e) => e.target.style.background = 'rgba(239,68,68,0.06)'}
-        onMouseLeave={(e) => e.target.style.background = 'transparent'}
       >
         🔌 Sign Out
       </button>
@@ -202,7 +240,7 @@ export const Dashboard = () => {
   </div>
 
   {/* Main Content */}
-  <div style={{ flex: 1, marginLeft: '240px' }}>
+  <div className="main-content" style={{ flex: 1 }}>
     <header style={{
       padding: '20px 30px',
       borderBottom: '1px solid rgba(11,18,32,0.06)',
@@ -215,6 +253,7 @@ export const Dashboard = () => {
       <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
         <button
           onClick={() => setSidebarOpen(!sidebarOpen)}
+          className="hamburger-menu"
           style={{
             display: 'none',
             width: '44px',
@@ -306,8 +345,7 @@ export const Dashboard = () => {
             transition: '0.28s',
             cursor: 'pointer'
           }}
-          onMouseEnter={(e) => e.style.transform = 'translateY(-4px) scale(1.02)'}
-          onMouseLeave={(e) => e.style.transform = 'translateY(0) scale(1)'}
+          className="card-hover"
           >
             <div style={{ fontSize: '32px', marginBottom: '10px' }}>👥</div>
             <h4 style={{ margin: '6px 0 8px 0', fontSize: '15px' }}>Students</h4>
@@ -323,8 +361,7 @@ export const Dashboard = () => {
             transition: '0.28s',
             cursor: 'pointer'
           }}
-          onMouseEnter={(e) => e.style.transform = 'translateY(-4px) scale(1.02)'}
-          onMouseLeave={(e) => e.style.transform = 'translateY(0) scale(1)'}
+          className="card-hover"
           >
             <div style={{ fontSize: '32px', marginBottom: '10px' }}>🏫</div>
             <h4 style={{ margin: '6px 0 8px 0', fontSize: '15px' }}>Classes</h4>
@@ -340,8 +377,7 @@ export const Dashboard = () => {
             transition: '0.28s',
             cursor: 'pointer'
           }}
-          onMouseEnter={(e) => e.style.transform = 'translateY(-4px) scale(1.02)'}
-          onMouseLeave={(e) => e.style.transform = 'translateY(0) scale(1)'}
+          className="card-hover"
           >
             <div style={{ fontSize: '32px', marginBottom: '10px' }}>🏆</div>
             <h4 style={{ margin: '6px 0 8px 0', fontSize: '15px' }}>Rewards</h4>
@@ -357,8 +393,7 @@ export const Dashboard = () => {
             transition: '0.28s',
             cursor: 'pointer'
           }}
-          onMouseEnter={(e) => e.style.transform = 'translateY(-4px) scale(1.02)'}
-          onMouseLeave={(e) => e.style.transform = 'translateY(0) scale(1)'}
+          className="card-hover"
           >
             <div style={{ fontSize: '32px', marginBottom: '10px' }}>📊</div>
             <h4 style={{ margin: '6px 0 8px 0', fontSize: '15px' }}>Reports</h4>

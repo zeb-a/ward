@@ -5,6 +5,8 @@ export const Classes = () => {
   const [classes, setClasses] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showAddForm, setShowAddForm] = useState(false);
+  const [showEditForm, setShowEditForm] = useState(false);
+  const [editingClass, setEditingClass] = useState(null);
   const [newClass, setNewClass] = useState({ name: '', description: '' });
 
   // Fetch classes
@@ -49,6 +51,54 @@ export const Classes = () => {
     }
   };
 
+  const handleEditClass = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+
+    try {
+      const { data, error } = await supabase
+        .from('classes')
+        .update(editingClass)
+        .eq('id', editingClass.id)
+        .select();
+
+      if (error) throw error;
+
+      setClasses(classes.map(c => c.id === editingClass.id ? data[0] : c));
+      setEditingClass(null);
+      setShowEditForm(false);
+    } catch (error) {
+      console.error('Error updating class:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDeleteClass = async (id) => {
+    if (!window.confirm('Are you sure you want to delete this class?')) return;
+    
+    setLoading(true);
+    try {
+      const { error } = await supabase
+        .from('classes')
+        .delete()
+        .eq('id', id);
+
+      if (error) throw error;
+
+      setClasses(classes.filter(c => c.id !== id));
+    } catch (error) {
+      console.error('Error deleting class:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const startEditClass = (cls) => {
+    setEditingClass({ ...cls });
+    setShowEditForm(true);
+  };
+
   if (loading) {
     return (
       <div style={{
@@ -82,6 +132,7 @@ export const Classes = () => {
         </h2>
         <button
           onClick={() => setShowAddForm(true)}
+          className="btn-hover"
           style={{
             background: 'linear-gradient(135deg, #6b46ff, #b86bff)',
             color: 'white',
@@ -93,8 +144,6 @@ export const Classes = () => {
             boxShadow: '0 8px 28px rgba(15,20,40,0.08)',
             transition: '0.28s'
           }}
-          onMouseEnter={(e) => e.style.transform = 'scale(1.04)'}
-          onMouseLeave={(e) => e.style.transform = 'scale(1)'}
         >
           + Add Class
         </button>
@@ -179,6 +228,89 @@ export const Classes = () => {
           </form>
         </div>
       )}
+      
+      {showEditForm && editingClass && (
+        <div style={{
+          background: 'white',
+          borderRadius: '18px',
+          padding: '24px',
+          marginBottom: '24px',
+          boxShadow: '0 8px 28px rgba(15,20,40,0.08)',
+          border: '1px solid rgba(120,110,255,0.06)'
+        }}>
+          <h3 style={{ margin: '0 0 16px 0', fontSize: '18px', fontWeight: '600' }}>Edit Class</h3>
+          <form onSubmit={handleEditClass}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '16px' }}>
+              <div>
+                <label style={{ display: 'block', marginBottom: '6px', fontWeight: '500' }}>Class Name</label>
+                <input
+                  type="text"
+                  value={editingClass.name}
+                  onChange={(e) => setEditingClass({ ...editingClass, name: e.target.value })}
+                  required
+                  style={{
+                    width: '100%',
+                    padding: '12px',
+                    borderRadius: '12px',
+                    border: '1px solid #eef2f8',
+                    background: 'linear-gradient(180deg, #fff, #fbfdff)',
+                    boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.6)'
+                  }}
+                />
+              </div>
+              <div>
+                <label style={{ display: 'block', marginBottom: '6px', fontWeight: '500' }}>Description</label>
+                <input
+                  type="text"
+                  value={editingClass.description}
+                  onChange={(e) => setEditingClass({ ...editingClass, description: e.target.value })}
+                  style={{
+                    width: '100%',
+                    padding: '12px',
+                    borderRadius: '12px',
+                    border: '1px solid #eef2f8',
+                    background: 'linear-gradient(180deg, #fff, #fbfdff)',
+                    boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.6)'
+                  }}
+                />
+              </div>
+            </div>
+            <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
+              <button
+                type="button"
+                onClick={() => {
+                  setShowEditForm(false);
+                  setEditingClass(null);
+                }}
+                style={{
+                  background: 'transparent',
+                  border: '1px solid rgba(11,18,32,0.06)',
+                  padding: '8px 12px',
+                  borderRadius: '10px',
+                  color: '#6b7280',
+                  cursor: 'pointer'
+                }}
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                style={{
+                  background: 'linear-gradient(135deg, #6b46ff, #b86bff)',
+                  color: 'white',
+                  border: '0',
+                  padding: '8px 12px',
+                  borderRadius: '10px',
+                  fontWeight: '600',
+                  cursor: 'pointer'
+                }}
+              >
+                Update Class
+              </button>
+            </div>
+          </form>
+        </div>
+      )}
 
       <div style={{
         background: 'white',
@@ -196,16 +328,13 @@ export const Classes = () => {
         ) : (
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '16px' }}>
             {classes.map(cls => (
-              <div key={cls.id} style={{
+              <div key={cls.id} className="card-hover" style={{
                 background: 'linear-gradient(180deg, #fff, #fbfdff)',
                 borderRadius: '16px',
                 padding: '16px',
                 border: '1px solid rgba(120,110,255,0.06)',
                 transition: '0.28s'
-              }}
-              onMouseEnter={(e) => e.style.transform = 'translateY(-2px)'}
-              onMouseLeave={(e) => e.style.transform = 'translateY(0)'}
-              >
+              }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '12px' }}>
                   <div style={{
                     width: '48px',
@@ -230,29 +359,35 @@ export const Classes = () => {
                 </div>
                 
                 <div style={{ display: 'flex', gap: '8px', marginTop: '16px' }}>
-                  <button style={{
-                    flex: 1,
-                    padding: '8px 10px',
-                    borderRadius: '8px',
-                    border: '1px solid rgba(11,18,32,0.06)',
-                    background: 'transparent',
-                    color: '#6b7280',
-                    cursor: 'pointer',
-                    fontSize: '14px'
-                  }}>
+                  <button 
+                    onClick={() => startEditClass(cls)}
+                    style={{
+                      flex: 1,
+                      padding: '8px 10px',
+                      borderRadius: '8px',
+                      border: '1px solid rgba(11,18,32,0.06)',
+                      background: 'transparent',
+                      color: '#6b7280',
+                      cursor: 'pointer',
+                      fontSize: '14px'
+                    }}
+                  >
                     Edit
                   </button>
-                  <button style={{
-                    flex: 1,
-                    padding: '8px 10px',
-                    borderRadius: '8px',
-                    background: 'linear-gradient(135deg, #6b46ff, #b86bff)',
-                    border: '0',
-                    color: 'white',
-                    cursor: 'pointer',
-                    fontSize: '14px'
-                  }}>
-                    View Students
+                  <button 
+                    onClick={() => handleDeleteClass(cls.id)}
+                    style={{
+                      flex: 1,
+                      padding: '8px 10px',
+                      borderRadius: '8px',
+                      background: 'linear-gradient(135deg, #ef4444, #f87171)',
+                      border: '0',
+                      color: 'white',
+                      cursor: 'pointer',
+                      fontSize: '14px'
+                    }}
+                  >
+                    Delete
                   </button>
                 </div>
               </div>
