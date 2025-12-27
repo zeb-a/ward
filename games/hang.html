@@ -1,0 +1,1285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hangman</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/phaser@3.60.0/dist/phaser.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', system-ui, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+            color: #fff;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            display: flex;
+            gap: 20px;
+            max-width: 1000px;
+            width: 100%;
+        }
+
+        /* Game Square */
+        .game-square {
+            width: 500px;
+            height: 500px;
+            background: rgba(25, 25, 35, 0.9);
+            border-radius: 10px;
+            position: relative;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        }
+
+        #game-container {
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+
+        .hamburger-menu {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: rgba(108, 99, 255, 0.3);
+            border: none;
+            border-radius: 8px;
+            color: white;
+            width: 40px;
+            height: 40px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+        }
+
+        .controls-popup {
+            position: absolute;
+            top: 60px;
+            right: 15px;
+            background: rgba(40, 40, 60, 0.95);
+            border-radius: 10px;
+            padding: 15px;
+            display: none;
+            flex-direction: column;
+            gap: 10px;
+            width: 150px;
+            z-index: 100;
+            border: 1px solid rgba(108, 99, 255, 0.3);
+            backdrop-filter: blur(10px);
+        }
+
+        .control-btn {
+            padding: 12px;
+            background: rgba(108, 99, 255, 0.3);
+            border: none;
+            border-radius: 8px;
+            color: white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: all 0.3s;
+        }
+
+        .control-btn:hover {
+            background: rgba(108, 99, 255, 0.5);
+        }
+
+        .fullscreen-btn {
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            background: rgba(108, 99, 255, 0.3);
+            border: none;
+            border-radius: 8px;
+            color: white;
+            width: 40px;
+            height: 40px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+        }
+
+        .sound-toggle {
+            position: absolute;
+            bottom: 15px;
+            right: 15px;
+            background: rgba(108, 99, 255, 0.3);
+            border: none;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            color: white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+        }
+
+        /* Setup Panel */
+        .setup-panel {
+            flex: 1;
+            background: rgba(25, 25, 35, 0.9);
+            border-radius: 10px;
+            padding: 0;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            max-width: 400px;
+            transition: all 0.3s ease;
+            overflow: hidden;
+        }
+
+        .panel-header {
+            padding: 20px;
+            background: rgba(108, 99, 255, 0.2);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .panel-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: white;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .panel-title i {
+            color: #6c63ff;
+        }
+
+        .collapse-btn {
+            background: none;
+            border: none;
+            color: white;
+            cursor: pointer;
+            font-size: 1.2rem;
+        }
+
+        .panel-content {
+            padding: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .panel-content.collapsed {
+            display: none;
+        }
+
+        .mode-selector {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .mode-btn {
+            flex: 1;
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            color: #d0d0f0;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.3s;
+            font-size: 0.9rem;
+        }
+
+        .mode-btn.active {
+            background: rgba(108, 99, 255, 0.3);
+            border-color: #6c63ff;
+            color: white;
+        }
+
+        .mode-btn:hover {
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        .input-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #d0d0f0;
+            font-weight: 500;
+            font-size: 0.9rem;
+        }
+
+        input, textarea {
+            width: 100%;
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            color: white;
+            font-size: 0.9rem;
+        }
+
+        textarea {
+            min-height: 60px;
+            resize: vertical;
+        }
+
+        input:focus, textarea:focus {
+            outline: none;
+            border-color: #6c63ff;
+        }
+
+        .photo-upload {
+            margin-top: 15px;
+            padding: 15px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 8px;
+            border: 1px dashed rgba(108, 99, 255, 0.3);
+        }
+
+        .upload-btns {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .upload-btn {
+            flex: 1;
+            padding: 10px;
+            background: rgba(108, 99, 255, 0.2);
+            border: 1px solid rgba(108, 99, 255, 0.3);
+            border-radius: 8px;
+            color: #d0d0f0;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.3s;
+            font-size: 0.8rem;
+        }
+
+        .upload-btn:hover {
+            background: rgba(108, 99, 255, 0.3);
+        }
+
+        .image-preview {
+            margin-top: 15px;
+            border-radius: 8px;
+            overflow: hidden;
+            display: none;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .image-preview img {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+
+        .url-input {
+            margin-top: 10px;
+            display: none;
+        }
+
+        .buttons-row {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(45deg, #6c63ff, #8a84ff);
+        }
+
+        .btn-primary:hover {
+            background: linear-gradient(45deg, #5a52e0, #7a74e0);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .word-list {
+            margin-top: 20px;
+            max-height: 300px;
+            overflow-y: auto;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 10px;
+            background: rgba(0, 0, 0, 0.2);
+        }
+
+        .word-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 6px;
+            margin-bottom: 8px;
+        }
+
+        .word-text {
+            font-weight: bold;
+            font-size: 0.9rem;
+        }
+
+        .word-clue {
+            color: #a0a0c0;
+            font-size: 0.8rem;
+            margin-top: 3px;
+        }
+
+        .word-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .icon-btn {
+            background: transparent;
+            border: none;
+            color: #a0a0c0;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+
+        .icon-btn:hover {
+            color: white;
+        }
+
+        /* Status Message */
+        .status-message {
+            position: absolute;
+            bottom: 60px;
+            left: 0;
+            right: 0;
+            text-align: center;
+            font-size: 1rem;
+            font-weight: 600;
+            color: #6c63ff;
+            padding: 10px;
+            z-index: 50;
+        }
+
+        /* Fullscreen mode */
+        body.fullscreen {
+            padding: 0;
+            background: #0f0c29;
+        }
+
+        body.fullscreen .container {
+            max-width: 100%;
+            width: 100%;
+            height: 100vh;
+            padding: 30px;
+            align-items: center;
+            justify-content: center;
+        }
+
+        body.fullscreen .game-square {
+            width: 600px;
+            height: 600px;
+        }
+
+        @media (max-width: 900px) {
+            .container {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .game-square {
+                width: 400px;
+                height: 400px;
+            }
+            
+            .setup-panel {
+                max-width: 400px;
+                width: 100%;
+            }
+        }
+
+        @media (max-width: 500px) {
+            .game-square {
+                width: 350px;
+                height: 350px;
+            }
+            
+            .setup-panel {
+                max-width: 350px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Game Square -->
+        <div class="game-square">
+            <div id="game-container"></div>
+            
+            <button class="hamburger-menu" id="hamburgerBtn">
+                <i class="fas fa-bars"></i>
+            </button>
+            
+            <button class="fullscreen-btn" id="fullscreenBtn">
+                <i class="fas fa-expand"></i>
+            </button>
+            
+            <button class="sound-toggle" id="soundToggle">
+                <i class="fas fa-volume-up"></i>
+            </button>
+            
+            <div class="controls-popup" id="controlsPopup">
+                <button class="control-btn" id="startBtn">
+                    <i class="fas fa-play"></i> Start
+                </button>
+                <button class="control-btn" id="pauseBtn">
+                    <i class="fas fa-pause"></i> Pause
+                </button>
+                <button class="control-btn" id="resetBtn">
+                    <i class="fas fa-redo"></i> Reset
+                </button>
+            </div>
+            
+            <div class="status-message" id="statusMessage">
+                Add words and start the game
+            </div>
+        </div>
+        
+        <!-- Setup Panel -->
+        <div class="setup-panel">
+            <div class="panel-header" id="panelHeader">
+                <div class="panel-title">
+                    <i class="fas fa-cog"></i> Word Setup
+                </div>
+                <button class="collapse-btn" id="collapseBtn">
+                    <i class="fas fa-chevron-up"></i>
+                </button>
+            </div>
+            
+            <div class="panel-content" id="panelContent">
+                <div class="mode-selector">
+                    <div class="mode-btn active" id="modeWithoutClues">Without Clues</div>
+                    <div class="mode-btn" id="modeWithClues">With Clues</div>
+                </div>
+                
+                <div class="input-group">
+                    <label for="wordInput">Word (1-20 letters)</label>
+                    <input type="text" id="wordInput" placeholder="Enter a word..." maxlength="20">
+                </div>
+                
+                <div class="input-group" id="clueContainer" style="display: none;">
+                    <label for="clueInput">Text Clue (optional)</label>
+                    <textarea id="clueInput" placeholder="Enter a clue or sentence..."></textarea>
+                    
+                    <div class="photo-upload">
+                        <label>Photo Clue (optional)</label>
+                        <div class="upload-btns">
+                            <button class="upload-btn" id="uploadDeviceBtn">
+                                <i class="fas fa-upload"></i> Upload
+                            </button>
+                            <button class="upload-btn" id="uploadUrlBtn">
+                                <i class="fas fa-link"></i> URL
+                            </button>
+                        </div>
+                        <input type="file" id="fileInput" accept="image/*" style="display: none;">
+                        <input type="text" id="urlInput" class="url-input" placeholder="Paste image URL...">
+                        <div class="image-preview" id="imagePreview">
+                            <img src="" alt="Preview">
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="buttons-row">
+                    <button class="btn btn-primary" id="addWordBtn">
+                        <i class="fas fa-plus"></i> Add Word
+                    </button>
+                    <button class="btn btn-secondary" id="clearWordsBtn">
+                        <i class="fas fa-trash"></i> Clear All
+                    </button>
+                </div>
+                
+                <div class="word-list" id="wordList">
+                    <div style="text-align: center; color: #a0a0c0; padding: 20px;">
+                        No words added yet
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Game state
+        const gameState = {
+            words: [],
+            currentWordIndex: -1,
+            currentWord: '',
+            currentClue: '',
+            currentImage: '',
+            guessedLetters: new Set(),
+            mistakes: 0,
+            maxMistakes: 6,
+            gameActive: false,
+            gamePaused: false,
+            soundsEnabled: true,
+            panelCollapsed: false,
+            phaserGame: null,
+            wordDisplay: null,
+            clueDisplay: null,
+            keyboardButtons: []
+        };
+
+        // DOM Elements
+        const gameContainer = document.getElementById('game-container');
+        const hamburgerBtn = document.getElementById('hamburgerBtn');
+        const controlsPopup = document.getElementById('controlsPopup');
+        const fullscreenBtn = document.getElementById('fullscreenBtn');
+        const soundToggle = document.getElementById('soundToggle');
+        const startBtn = document.getElementById('startBtn');
+        const pauseBtn = document.getElementById('pauseBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const statusMessage = document.getElementById('statusMessage');
+        const panelHeader = document.getElementById('panelHeader');
+        const panelContent = document.getElementById('panelContent');
+        const collapseBtn = document.getElementById('collapseBtn');
+        const wordInput = document.getElementById('wordInput');
+        const clueInput = document.getElementById('clueInput');
+        const clueContainer = document.getElementById('clueContainer');
+        const addWordBtn = document.getElementById('addWordBtn');
+        const clearWordsBtn = document.getElementById('clearWordsBtn');
+        const wordList = document.getElementById('wordList');
+        const modeWithoutClues = document.getElementById('modeWithoutClues');
+        const modeWithClues = document.getElementById('modeWithClues');
+        const uploadDeviceBtn = document.getElementById('uploadDeviceBtn');
+        const uploadUrlBtn = document.getElementById('uploadUrlBtn');
+        const fileInput = document.getElementById('fileInput');
+        const urlInput = document.getElementById('urlInput');
+        const imagePreview = document.getElementById('imagePreview');
+
+        // Initialize Phaser game
+        function initPhaser() {
+            const config = {
+                type: Phaser.CANVAS,
+                parent: 'game-container',
+                width: 500,
+                height: 500,
+                backgroundColor: '#191923',
+                scene: {
+                    preload: preload,
+                    create: create,
+                    update: update
+                }
+            };
+
+            gameState.phaserGame = new Phaser.Game(config);
+        }
+
+        function preload() {
+            // Load chalk font for drawing
+            this.load.image('chalk', 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==');
+        }
+
+        function create() {
+            const scene = this;
+            
+            // Create chalk-style graphics for hangman
+            gameState.hangmanGraphics = this.add.graphics();
+            gameState.hangmanGraphics.lineStyle(4, 0xffffff, 1);
+            gameState.hangmanGraphics.fillStyle(0xffffff, 0.1);
+            
+            // Draw gallows (always visible)
+            drawGallows();
+            
+            // Create word display container
+            gameState.wordDisplay = this.add.container(250, 400);
+            
+            // Create clue display (hidden initially)
+            gameState.clueDisplay = this.add.text(250, 350, '', {
+                fontSize: '16px',
+                fill: '#a0a0c0',
+                fontStyle: 'italic',
+                align: 'center'
+            }).setOrigin(0.5).setVisible(false);
+            
+            // Create keyboard
+            createKeyboard.call(this);
+            
+            // Create status display
+            gameState.statusText = this.add.text(250, 450, '', {
+                fontSize: '18px',
+                fill: '#6c63ff',
+                fontStyle: 'bold'
+            }).setOrigin(0.5);
+            
+            // Create hangman parts (initially hidden)
+            gameState.hangmanParts = {
+                head: null,
+                body: null,
+                leftArm: null,
+                rightArm: null,
+                leftLeg: null,
+                rightLeg: null
+            };
+        }
+
+        function update() {
+            // Update logic if needed
+        }
+
+        function drawGallows() {
+            const g = gameState.hangmanGraphics;
+            g.clear();
+            
+            // Set chalk-like style
+            g.lineStyle(3, 0xffffff, 0.8);
+            g.fillStyle(0xffffff, 0.1);
+            
+            // Draw gallows base
+            g.beginPath();
+            g.moveTo(100, 450);
+            g.lineTo(300, 450);
+            g.strokePath();
+            
+            // Draw vertical pole
+            g.beginPath();
+            g.moveTo(200, 450);
+            g.lineTo(200, 150);
+            g.strokePath();
+            
+            // Draw top beam
+            g.beginPath();
+            g.moveTo(200, 150);
+            g.lineTo(300, 150);
+            g.strokePath();
+            
+            // Draw rope
+            g.beginPath();
+            g.moveTo(300, 150);
+            g.lineTo(300, 180);
+            g.strokePath();
+        }
+
+        function drawHangmanPart(part) {
+            const g = gameState.hangmanGraphics;
+            g.lineStyle(4, 0xffffff, 0.9);
+            
+            switch(part) {
+                case 'head':
+                    g.strokeCircle(300, 200, 20);
+                    break;
+                case 'body':
+                    g.beginPath();
+                    g.moveTo(300, 220);
+                    g.lineTo(300, 300);
+                    g.strokePath();
+                    break;
+                case 'leftArm':
+                    g.beginPath();
+                    g.moveTo(300, 240);
+                    g.lineTo(270, 260);
+                    g.strokePath();
+                    break;
+                case 'rightArm':
+                    g.beginPath();
+                    g.moveTo(300, 240);
+                    g.lineTo(330, 260);
+                    g.strokePath();
+                    break;
+                case 'leftLeg':
+                    g.beginPath();
+                    g.moveTo(300, 300);
+                    g.lineTo(270, 340);
+                    g.strokePath();
+                    break;
+                case 'rightLeg':
+                    g.beginPath();
+                    g.moveTo(300, 300);
+                    g.lineTo(330, 340);
+                    g.strokePath();
+                    break;
+            }
+        }
+
+        function createKeyboard() {
+            const scene = this;
+            gameState.keyboardButtons = [];
+            
+            const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
+            let row = 0;
+            let col = 0;
+            
+            for(let i = 0; i < letters.length; i++) {
+                const letter = letters[i];
+                
+                if(i >= 13) {
+                    row = 1;
+                    col = i - 13;
+                } else {
+                    row = 0;
+                    col = i;
+                }
+                
+                const x = 100 + col * 30;
+                const y = 470 + row * 35;
+                
+                const key = scene.add.text(x, y, letter, {
+                    fontSize: '18px',
+                    fill: '#ffffff',
+                    backgroundColor: '#2a2a3a',
+                    padding: { x: 8, y: 5 }
+                })
+                .setInteractive()
+                .on('pointerdown', () => handleLetterClick(letter))
+                .on('pointerover', () => {
+                    if(!key.disabled) {
+                        key.setBackgroundColor('#3a3a4a');
+                    }
+                })
+                .on('pointerout', () => {
+                    if(!key.disabled) {
+                        key.setBackgroundColor('#2a2a3a');
+                    }
+                });
+                
+                gameState.keyboardButtons.push({
+                    letter: letter,
+                    text: key,
+                    disabled: false
+                });
+            }
+        }
+
+        function updateKeyboard() {
+            gameState.keyboardButtons.forEach(key => {
+                if(gameState.guessedLetters.has(key.letter)) {
+                    const isCorrect = gameState.currentWord.includes(key.letter);
+                    key.text.setBackgroundColor(isCorrect ? '#00b09b' : '#ff416c');
+                    key.text.setFill(isCorrect ? '#00ffea' : '#ff8fa3');
+                    key.disabled = true;
+                } else {
+                    key.text.setBackgroundColor('#2a2a3a');
+                    key.text.setFill('#ffffff');
+                    key.disabled = !gameState.gameActive || gameState.gamePaused;
+                }
+            });
+        }
+
+        function updateWordDisplay() {
+            if(!gameState.wordDisplay) return;
+            
+            gameState.wordDisplay.removeAll();
+            
+            const wordLength = gameState.currentWord.length;
+            const totalWidth = wordLength * 40;
+            const startX = 250 - totalWidth / 2;
+            
+            for(let i = 0; i < wordLength; i++) {
+                const letter = gameState.currentWord[i];
+                const isGuessed = gameState.guessedLetters.has(letter);
+                
+                const x = startX + i * 40;
+                
+                // Draw underline
+                const underline = gameState.phaserGame.scene.scenes[0].add.graphics();
+                underline.lineStyle(2, 0x6c63ff, 1);
+                underline.beginPath();
+                underline.moveTo(x - 15, 20);
+                underline.lineTo(x + 15, 20);
+                underline.strokePath();
+                gameState.wordDisplay.add(underline);
+                
+                // Draw letter if guessed
+                if(isGuessed) {
+                    const letterText = gameState.phaserGame.scene.scenes[0].add.text(x, 0, letter, {
+                        fontSize: '32px',
+                        fill: '#ffffff',
+                        fontStyle: 'bold'
+                    }).setOrigin(0.5);
+                    gameState.wordDisplay.add(letterText);
+                    
+                    // Add pop animation
+                    gameState.phaserGame.scene.scenes[0].tweens.add({
+                        targets: letterText,
+                        scaleX: 1.2,
+                        scaleY: 1.2,
+                        duration: 150,
+                        yoyo: true,
+                        ease: 'Power2'
+                    });
+                }
+            }
+        }
+
+        function updateClueDisplay() {
+            if(gameState.clueDisplay) {
+                if(gameState.currentImage) {
+                    // For image clues, we'd need to load the image
+                    // For now, just show text indication
+                    gameState.clueDisplay.setText('📷 Image clue available');
+                    gameState.clueDisplay.setVisible(true);
+                } else if(gameState.currentClue) {
+                    gameState.clueDisplay.setText(gameState.currentClue);
+                    gameState.clueDisplay.setVisible(true);
+                } else {
+                    gameState.clueDisplay.setVisible(false);
+                }
+            }
+        }
+
+        function updateHangman() {
+            const parts = ['head', 'body', 'leftArm', 'rightArm', 'leftLeg', 'rightLeg'];
+            
+            for(let i = 0; i < Math.min(gameState.mistakes, 6); i++) {
+                if(!gameState.hangmanParts[parts[i]]) {
+                    drawHangmanPart(parts[i]);
+                    gameState.hangmanParts[parts[i]] = true;
+                    
+                    // Add chalk drawing effect
+                    const scene = gameState.phaserGame.scene.scenes[0];
+                    scene.cameras.main.shake(100, 0.01);
+                }
+            }
+        }
+
+        function resetHangman() {
+            const scene = gameState.phaserGame.scene.scenes[0];
+            
+            // Clear graphics
+            if(gameState.hangmanGraphics) {
+                gameState.hangmanGraphics.clear();
+                drawGallows();
+            }
+            
+            // Reset hangman parts
+            gameState.hangmanParts = {
+                head: null,
+                body: null,
+                leftArm: null,
+                rightArm: null,
+                leftLeg: null,
+                rightLeg: null
+            };
+            
+            // Reset word display
+            if(gameState.wordDisplay) {
+                gameState.wordDisplay.removeAll();
+            }
+            
+            // Hide clue display
+            if(gameState.clueDisplay) {
+                gameState.clueDisplay.setVisible(false);
+            }
+            
+            // Reset keyboard
+            updateKeyboard();
+        }
+
+        // Initialize the game
+        function init() {
+            initPhaser();
+            setupEventListeners();
+            updateWordListDisplay();
+        }
+
+        // Setup event listeners
+        function setupEventListeners() {
+            hamburgerBtn.addEventListener('click', () => {
+                controlsPopup.style.display = controlsPopup.style.display === 'flex' ? 'none' : 'flex';
+            });
+            
+            fullscreenBtn.addEventListener('click', toggleFullscreen);
+            soundToggle.addEventListener('click', toggleSound);
+            startBtn.addEventListener('click', startGame);
+            pauseBtn.addEventListener('click', togglePause);
+            resetBtn.addEventListener('click', resetGame);
+            
+            panelHeader.addEventListener('click', togglePanel);
+            modeWithoutClues.addEventListener('click', () => setMode('without'));
+            modeWithClues.addEventListener('click', () => setMode('with'));
+            
+            addWordBtn.addEventListener('click', addWord);
+            clearWordsBtn.addEventListener('click', clearAllWords);
+            
+            uploadDeviceBtn.addEventListener('click', () => fileInput.click());
+            uploadUrlBtn.addEventListener('click', () => {
+                urlInput.style.display = urlInput.style.display === 'block' ? 'none' : 'block';
+            });
+            
+            fileInput.addEventListener('change', handleImageUpload);
+            urlInput.addEventListener('change', handleUrlInput);
+            
+            wordInput.addEventListener('keypress', (e) => {
+                if(e.key === 'Enter') addWord();
+            });
+            
+            // Close controls popup when clicking outside
+            document.addEventListener('click', (e) => {
+                if(!hamburgerBtn.contains(e.target) && !controlsPopup.contains(e.target)) {
+                    controlsPopup.style.display = 'none';
+                }
+            });
+        }
+
+        function handleImageUpload(event) {
+            const file = event.target.files[0];
+            if(!file) return;
+            
+            if(!file.type.match('image.*')) {
+                showStatus("Please select an image file", "error");
+                return;
+            }
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const img = imagePreview.querySelector('img');
+                img.src = e.target.result;
+                imagePreview.style.display = 'block';
+                gameState.currentImage = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function handleUrlInput(event) {
+            const url = event.target.value.trim();
+            if(!url) return;
+            
+            try {
+                new URL(url);
+            } catch(e) {
+                showStatus("Please enter a valid URL", "error");
+                return;
+            }
+            
+            const img = imagePreview.querySelector('img');
+            img.src = url;
+            imagePreview.style.display = 'block';
+            gameState.currentImage = url;
+        }
+
+        function toggleFullscreen() {
+            if(!document.fullscreenElement) {
+                document.documentElement.requestFullscreen();
+                document.body.classList.add('fullscreen');
+                fullscreenBtn.innerHTML = '<i class="fas fa-compress"></i>';
+            } else {
+                document.exitFullscreen();
+                document.body.classList.remove('fullscreen');
+                fullscreenBtn.innerHTML = '<i class="fas fa-expand"></i>';
+            }
+        }
+
+        function toggleSound() {
+            gameState.soundsEnabled = !gameState.soundsEnabled;
+            
+            if(gameState.soundsEnabled) {
+                soundToggle.innerHTML = '<i class="fas fa-volume-up"></i>';
+            } else {
+                soundToggle.innerHTML = '<i class="fas fa-volume-mute"></i>';
+            }
+        }
+
+        function togglePanel() {
+            gameState.panelCollapsed = !gameState.panelCollapsed;
+            
+            if(gameState.panelCollapsed) {
+                panelContent.classList.add('collapsed');
+                collapseBtn.innerHTML = '<i class="fas fa-chevron-down"></i>';
+            } else {
+                panelContent.classList.remove('collapsed');
+                collapseBtn.innerHTML = '<i class="fas fa-chevron-up"></i>';
+            }
+        }
+
+        function setMode(mode) {
+            if(mode === 'with') {
+                modeWithClues.classList.add('active');
+                modeWithoutClues.classList.remove('active');
+                clueContainer.style.display = 'block';
+            } else {
+                modeWithoutClues.classList.add('active');
+                modeWithClues.classList.remove('active');
+                clueContainer.style.display = 'none';
+            }
+        }
+
+        function addWord() {
+            const word = wordInput.value.trim().toUpperCase();
+            
+            if(!word) {
+                showStatus("Please enter a word", "error");
+                return;
+            }
+            
+            if(word.length < 1 || word.length > 20) {
+                showStatus("Word must be 1-20 letters", "error");
+                return;
+            }
+            
+            if(!/^[A-Z]+$/.test(word)) {
+                showStatus("Word can only contain letters", "error");
+                return;
+            }
+            
+            const clue = clueInput.value.trim();
+            const image = gameState.currentImage;
+            
+            gameState.words.push({
+                word: word,
+                clue: clue,
+                image: image
+            });
+            
+            // Clear inputs
+            wordInput.value = '';
+            clueInput.value = '';
+            urlInput.value = '';
+            urlInput.style.display = 'none';
+            imagePreview.style.display = 'none';
+            imagePreview.querySelector('img').src = '';
+            gameState.currentImage = '';
+            fileInput.value = '';
+            
+            wordInput.focus();
+            
+            updateWordListDisplay();
+            showStatus(`Added "${word}" to the list`, "success");
+        }
+
+        function clearAllWords() {
+            gameState.words = [];
+            updateWordListDisplay();
+            showStatus("All words cleared", "error");
+        }
+
+        function updateWordListDisplay() {
+            wordList.innerHTML = '';
+            
+            if(gameState.words.length === 0) {
+                wordList.innerHTML = '<div style="text-align: center; color: #a0a0c0; padding: 20px;">No words added yet</div>';
+                return;
+            }
+            
+            gameState.words.forEach((wordObj, index) => {
+                const wordItem = document.createElement('div');
+                wordItem.className = 'word-item';
+                
+                wordItem.innerHTML = `
+                    <div>
+                        <div class="word-text">${wordObj.word}</div>
+                        ${wordObj.clue ? `<div class="word-clue">${wordObj.clue}</div>` : ''}
+                        ${wordObj.image ? `<div class="word-clue"><i class="fas fa-image"></i> Image clue</div>` : ''}
+                    </div>
+                    <div class="word-actions">
+                        <button class="icon-btn" onclick="removeWord(${index})">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                `;
+                
+                wordList.appendChild(wordItem);
+            });
+        }
+
+        function removeWord(index) {
+            gameState.words.splice(index, 1);
+            updateWordListDisplay();
+        }
+
+        function startGame() {
+            if(gameState.words.length === 0) {
+                showStatus("Add at least one word to start", "error");
+                return;
+            }
+            
+            if(gameState.gameActive) {
+                showStatus("Game is already active", "error");
+                return;
+            }
+            
+            // Reset game state
+            gameState.currentWordIndex = -1;
+            gameState.guessedLetters.clear();
+            gameState.mistakes = 0;
+            gameState.gameActive = true;
+            gameState.gamePaused = false;
+            
+            // Reset hangman
+            resetHangman();
+            
+            // Update UI
+            pauseBtn.innerHTML = '<i class="fas fa-pause"></i> Pause';
+            startBtn.disabled = true;
+            
+            // Start with first word
+            nextWord();
+            
+            showStatus("Game started! Guess the word", "success");
+            controlsPopup.style.display = 'none';
+        }
+
+        function resetGame() {
+            gameState.currentWordIndex = -1;
+            gameState.guessedLetters.clear();
+            gameState.mistakes = 0;
+            gameState.gameActive = false;
+            gameState.gamePaused = false;
+            
+            // Reset hangman
+            resetHangman();
+            
+            // Update UI
+            pauseBtn.innerHTML = '<i class="fas fa-pause"></i> Pause';
+            startBtn.disabled = false;
+            
+            showStatus("Add words and start the game", "info");
+            controlsPopup.style.display = 'none';
+        }
+
+        function togglePause() {
+            if(!gameState.gameActive) return;
+            
+            gameState.gamePaused = !gameState.gamePaused;
+            
+            if(gameState.gamePaused) {
+                pauseBtn.innerHTML = '<i class="fas fa-play"></i> Resume';
+                showStatus("Game Paused", "error");
+            } else {
+                pauseBtn.innerHTML = '<i class="fas fa-pause"></i> Pause';
+                showStatus("Continue guessing!", "success");
+            }
+            
+            updateKeyboard();
+        }
+
+        function handleLetterClick(letter) {
+            if(!gameState.gameActive || gameState.gamePaused) return;
+            if(gameState.guessedLetters.has(letter)) return;
+            
+            gameState.guessedLetters.add(letter);
+            
+            const isInWord = gameState.currentWord.includes(letter);
+            
+            if(!isInWord) {
+                gameState.mistakes++;
+                updateHangman();
+                
+                if(gameState.mistakes >= gameState.maxMistakes) {
+                    showStatus(`Game Over! The word was "${gameState.currentWord}"`, "error");
+                    setTimeout(() => nextWord(), 2000);
+                }
+            }
+            
+            updateWordDisplay();
+            updateKeyboard();
+            
+            if(isInWord) {
+                checkWordCompletion();
+            }
+        }
+
+        function checkWordCompletion() {
+            for(let i = 0; i < gameState.currentWord.length; i++) {
+                if(!gameState.guessedLetters.has(gameState.currentWord[i])) {
+                    return false;
+                }
+            }
+            
+            showStatus(`Correct! The word was "${gameState.currentWord}"`, "success");
+            setTimeout(() => nextWord(), 1500);
+            return true;
+        }
+
+        function nextWord() {
+            if(gameState.words.length === 0) {
+                endGame();
+                return;
+            }
+            
+            gameState.guessedLetters.clear();
+            gameState.mistakes = 0;
+            
+            // Get next word
+            gameState.currentWordIndex = (gameState.currentWordIndex + 1) % gameState.words.length;
+            const wordObj = gameState.words[gameState.currentWordIndex];
+            gameState.currentWord = wordObj.word;
+            gameState.currentClue = wordObj.clue;
+            gameState.currentImage = wordObj.image;
+            
+            // Update display
+            updateWordDisplay();
+            updateClueDisplay();
+            updateKeyboard();
+            
+            // Reset hangman drawing
+            const scene = gameState.phaserGame.scene.scenes[0];
+            if(scene && gameState.hangmanGraphics) {
+                gameState.hangmanGraphics.clear();
+                drawGallows();
+                gameState.hangmanParts = {
+                    head: null,
+                    body: null,
+                    leftArm: null,
+                    rightArm: null,
+                    leftLeg: null,
+                    rightLeg: null
+                };
+            }
+        }
+
+        function endGame() {
+            gameState.gameActive = false;
+            startBtn.disabled = false;
+            showStatus("Game Finished!", "info");
+        }
+
+        function showStatus(message, type) {
+            statusMessage.textContent = message;
+            statusMessage.style.color = 
+                type === 'error' ? '#ff416c' : 
+                type === 'success' ? '#00ffaa' : '#6c63ff';
+        }
+
+        // Initialize when page loads
+        window.addEventListener('DOMContentLoaded', init);
+        
+        // Make functions available globally
+        window.removeWord = removeWord;
+    </script>
+</body>
+</html>

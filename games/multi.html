@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Game-Style Quiz Creator</title>
+<style>
+body {
+  font-family: 'Poppins', sans-serif;
+  background: #f0f2f5;
+  display: flex;
+  justify-content: center;
+  padding: 20px;
+  margin: 0;
+}
+.container {
+  width: 100%;
+  max-width: 800px;
+}
+h1 {
+  text-align: center;
+  color: #333;
+}
+.card {
+  background: #fff;
+  border-radius: 16px;
+  padding: 20px;
+  margin-bottom: 20px;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+  perspective: 1000px;
+  transition: transform 0.3s;
+}
+.card-inner {
+  transition: transform 0.8s;
+  transform-style: preserve-3d;
+  position: relative;
+}
+.card.flipped .card-inner {
+  transform: rotateY(180deg);
+}
+.card-front, .card-back {
+  backface-visibility: hidden;
+  position: relative;
+}
+.card-back {
+  transform: rotateY(180deg);
+}
+.card img {
+  max-width: 100%;
+  border-radius: 12px;
+  margin-bottom: 15px;
+}
+input[type="text"] {
+  width: 100%;
+  padding: 12px;
+  margin: 8px 0;
+  border-radius: 12px;
+  border: 1px solid #ccc;
+  box-sizing: border-box;
+}
+button {
+  padding: 12px;
+  margin-top: 10px;
+  border: none;
+  border-radius: 12px;
+  background-color: #4caf50;
+  color: white;
+  font-size: 16px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+button:hover { background-color: #45a049; transform: scale(1.05);}
+.options button {
+  width: 100%;
+  margin: 8px 0;
+  background-color: #2196f3;
+  color: #fff;
+  font-size: 16px;
+  transition: transform 0.2s, background-color 0.3s;
+  border-radius: 12px;
+}
+.options button.correct { background-color: #4caf50; transform: scale(1.1);}
+.options button.wrong { background-color: #f44336; transform: scale(1.1);}
+.progress-bar {
+  width: 100%;
+  background: #ddd;
+  border-radius: 12px;
+  overflow: hidden;
+  margin-top: 10px;
+}
+.progress-bar-inner {
+  height: 12px;
+  background: #4caf50;
+  width: 0%;
+  transition: width 0.3s;
+}
+.dropzone {
+  border: 2px dashed #ccc;
+  border-radius: 12px;
+  padding: 20px;
+  text-align: center;
+  color: #999;
+  margin-bottom: 10px;
+  cursor: pointer;
+}
+.timer {
+  font-weight: bold;
+  margin-top: 10px;
+  color: #333;
+}
+
+/* Responsive card scaling */
+@media (min-width: 600px) {
+  .card { padding: 30px; }
+  input[type="text"] { padding: 16px; font-size: 18px; }
+  button { font-size: 18px; padding: 14px; }
+  .options button { font-size: 18px; padding: 14px; }
+}
+@media (min-width: 900px) {
+  .card { padding: 40px; }
+  input[type="text"] { padding: 20px; font-size: 20px; }
+  button { font-size: 20px; padding: 16px; }
+  .options button { font-size: 20px; padding: 16px; }
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+<h1>Fun Quiz Game</h1>
+
+<div class="card" id="creatorCard">
+  <h2>Create Question</h2>
+  <input type="text" id="questionText" placeholder="Question text">
+  <div class="dropzone" id="dropzone">Drag & Drop Image Here (optional)</div>
+  <input type="text" id="option1" placeholder="Option 1 (Correct)">
+  <input type="text" id="option2" placeholder="Option 2">
+  <input type="text" id="option3" placeholder="Option 3">
+  <button onclick="addQuestion()">Add Question</button>
+  <button onclick="saveQuiz()">Save Quiz</button>
+  <button onclick="loadQuiz()">Load Quiz</button>
+  <button onclick="startQuiz()">Start Game</button>
+  <div id="creatorMsg" style="margin-top:10px; color:#555;"></div>
+</div>
+
+<div class="card" id="quizCard" style="display:none;">
+  <div class="card-inner">
+    <div class="card-front">
+      <div id="questionDisplay"></div>
+      <div class="options">
+        <button id="btn1" onclick="checkAnswer(1)"></button>
+        <button id="btn2" onclick="checkAnswer(2)"></button>
+        <button id="btn3" onclick="checkAnswer(3)"></button>
+      </div>
+      <div class="timer" id="timer">Time: 15s</div>
+      <div class="progress-bar">
+        <div class="progress-bar-inner" id="progressBar"></div>
+      </div>
+      <div style="margin-top:10px;">Score: <span id="scoreDisplay">0</span></div>
+      <button id="nextBtn" style="display:none;" onclick="nextQuestion()">Next</button>
+    </div>
+  </div>
+</div>
+
+<canvas id="confettiCanvas" style="position:fixed;pointer-events:none;top:0;left:0;width:100%;height:100%;z-index:9999;"></canvas>
+
+</div>
+
+<script>
+// ====== Basic Variables ======
+let questions = [];
+let currentQuestion = 0;
+let score = 0;
+let draggedImage = null;
+let timerInterval;
+let timeLeft = 15;
+
+// ====== Confetti ======
+const confettiCanvas = document.getElementById('confettiCanvas');
+const ctx = confettiCanvas.getContext('2d');
+let confettiParticles = [];
+function resizeCanvas(){ confettiCanvas.width = window.innerWidth; confettiCanvas.height = window.innerHeight; }
+window.addEventListener('resize', resizeCanvas);
+resizeCanvas();
+
+function createConfetti() {
+  for(let i=0;i<100;i++){
+    confettiParticles.push({
+      x: Math.random()*confettiCanvas.width,
+      y: Math.random()*confettiCanvas.height- confettiCanvas.height,
+      r: Math.random()*6+4,
+      d: Math.random()*30+10,
+      color: `hsl(${Math.random()*360}, 70%, 60%)`,
+      tilt: Math.random()*10-10,
+      tiltAngleIncrement: Math.random()*0.07+0.05
+    });
+  }
+}
+
+function drawConfetti(){
+  ctx.clearRect(0,0,confettiCanvas.width, confettiCanvas.height);
+  confettiParticles.forEach((p)=>{
+    ctx.beginPath();
+    ctx.lineWidth=p.r/2;
+    ctx.strokeStyle=p.color;
+    ctx.moveTo(p.x+p.tilt+ p.r/4, p.y);
+    ctx.lineTo(p.x + p.tilt, p.y + p.tilt + p.r/2);
+    ctx.stroke();
+  });
+  updateConfetti();
+  requestAnimationFrame(drawConfetti);
+}
+function updateConfetti(){
+  confettiParticles.forEach((p)=>{
+    p.tiltAngle += p.tiltAngleIncrement;
+    p.y += (Math.cos(p.d)+3+p.r/2)/2;
+    p.tilt = Math.sin(p.tiltAngle)*15;
+    if(p.y>confettiCanvas.height){ p.y=-10; p.x=Math.random()*confettiCanvas.width; }
+  });
+}
+
+// ====== Drag & Drop Image ======
+const dropzone = document.getElementById('dropzone');
+dropzone.addEventListener('dragover', e => e.preventDefault());
+dropzone.addEventListener('drop', e => {
+  e.preventDefault();
+  const file = e.dataTransfer.files[0];
+  if(file && file.type.startsWith('image/')){
+    const reader = new FileReader();
+    reader.onload = e=>{
+      draggedImage = e.target.result; 
+      dropzone.textContent = "Image loaded!";
+    }
+    reader.readAsDataURL(file);
+  }
+});
+dropzone.addEventListener('click', ()=>{
+  const input = document.createElement('input');
+  input.type='file';
+  input.accept='image/*';
+  input.onchange = e=>{
+    const file = e.target.files[0];
+    if(file && file.type.startsWith('image/')){
+      const reader = new FileReader();
+      reader.onload=e=>{
+        draggedImage = e.target.result; 
+        dropzone.textContent = "Image loaded!";
+      }
+      reader.readAsDataURL(file);
+    }
+  }
+  input.click();
+});
+
+// ====== Question Functions ======
+function addQuestion(){
+  const qText = document.getElementById('questionText').value.trim();
+  const options = [
+    document.getElementById('option1').value.trim(),
+    document.getElementById('option2').value.trim(),
+    document.getElementById('option3').value.trim()
+  ];
+  if((!qText && !draggedImage) || options.some(o=>o==="")) return alert("Complete all fields");
+  questions.push({text:qText, options:options, image:draggedImage});
+  document.getElementById('questionText').value="";
+  document.getElementById('option1').value="";
+  document.getElementById('option2').value="";
+  document.getElementById('option3').value="";
+  draggedImage=null;
+  dropzone.textContent="Drag & Drop Image Here (optional)";
+  document.getElementById('creatorMsg').textContent=`Question added! Total: ${questions.length}`;
+}
+
+function saveQuiz(){
+  localStorage.setItem('myQuiz', JSON.stringify(questions));
+  alert("Quiz saved!");
+}
+
+function loadQuiz(){
+  const stored = localStorage.getItem('myQuiz');
+  if(!stored) return alert("No saved quiz found");
+  questions = JSON.parse(stored);
+  document.getElementById('creatorMsg').textContent=`Loaded quiz with ${questions.length} questions`;
+}
+
+function startQuiz(){
+  if(!questions.length) return alert("Add or load questions first");
+  document.getElementById('creatorCard').style.display='none';
+  document.getElementById('quizCard').style.display='block';
+  currentQuestion=0; score=0;
+  showQuestion();
+}
+
+// ====== Show Question ======
+function showQuestion(){
+  const q = questions[currentQuestion];
+  const display = document.getElementById('questionDisplay');
+  display.innerHTML="";
+  if(q.text) display.innerHTML=`<p>${q.text}</p>`;
+  if(q.image){
+    const img = document.createElement('img');
+    img.src = q.image;
+    display.appendChild(img);
+  }
+  const shuffled = q.options.map((t,i)=>({text:t,index:i+1})).sort(()=>Math.random()-0.5);
+  shuffled.forEach((o,i)=>{
+    const btn=document.getElementById(`btn${i+1}`);
+    btn.textContent=o.text;
+    btn.dataset.correct = (o.index===1);
+    btn.className='';
+    btn.disabled=false;
+  });
+  updateProgress();
+  document.getElementById('nextBtn').style.display='none';
+  document.getElementById('scoreDisplay').textContent=score;
+  startTimer();
+}
+
+// ====== Timer ======
+function startTimer(){
+  clearInterval(timerInterval);
+  timeLeft=15;
+  document.getElementById('timer').textContent = `Time: ${timeLeft}s`;
+  timerInterval = setInterval(()=>{
+    timeLeft--;
+    document.getElementById('timer').textContent = `Time: ${timeLeft}s`;
+    if(timeLeft<=0){
+      clearInterval(timerInterval);
+      revealCorrect();
+      document.getElementById('nextBtn').style.display='block';
+    }
+  },1000);
+}
+
+// ====== Check Answer ======
+function checkAnswer(n){
+  clearInterval(timerInterval);
+  const btn=document.getElementById(`btn${n}`);
+  if(btn.dataset.correct==='true') {
+    btn.className='correct'; score++; startConfetti();
+  } else btn.className='wrong';
+  for(let i=1;i<=3;i++) document.getElementById(`btn${i}`).disabled=true;
+  document.getElementById('scoreDisplay').textContent=score;
+  document.getElementById('nextBtn').style.display='block';
+}
+
+// ====== Reveal Correct if time runs out ======
+function revealCorrect(){
+  for(let i=1;i<=3;i++){
+    const btn=document.getElementById(`btn${i}`);
+    if(btn.dataset.correct==='true') btn.className='correct';
+    btn.disabled=true;
+  }
+}
+
+// ====== Next Question ======
+function nextQuestion(){
+  clearInterval(timerInterval);
+  currentQuestion++;
+  if(currentQuestion>=questions.length){
+    alert(`Game finished! Final Score: ${score}/${questions.length}`);
+    document.getElementById('creatorCard').style.display='block';
+    document.getElementById('quizCard').style.display='none';
+    confettiParticles = [];
+  } else showQuestion();
+}
+
+// ====== Progress ======
+function updateProgress(){
+  const percent = ((currentQuestion)/questions.length)*100;
+  document.getElementById('progressBar').style.width=percent+'%';
+}
+
+// ====== Confetti ======
+function startConfetti(){
+  createConfetti();
+  drawConfetti();
+}
+</script>
+
+</body>
+</html>

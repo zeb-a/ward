@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Memory Match: Word & Picture</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+  body {
+    margin: 0;
+    font-family: 'Poppins', sans-serif;
+    background: linear-gradient(135deg, #FFD700, #FF69B4);
+    overflow-x: hidden;
+  }
+
+  /* Hamburger */
+  .hamburger {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    width: 50px;
+    height: 50px;
+    background: rgba(255,255,255,0.3);
+    border-radius: 12px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around;
+    align-items: center;
+    padding: 6px;
+    cursor: pointer;
+    z-index: 50;
+  }
+  .hamburger span {
+    width: 30px;
+    height: 4px;
+    background: #333;
+    border-radius: 2px;
+  }
+
+  /* Input Panel */
+  .input-panel {
+    backdrop-filter: blur(12px);
+    background: rgba(255, 255, 255, 0.15);
+    padding: 15px;
+    border-radius: 20px;
+    max-width: 320px;
+    transition: transform 0.5s, opacity 0.5s;
+    z-index: 40;
+  }
+  .input-panel.hidden {
+    transform: translateX(-350px);
+    opacity: 0;
+  }
+
+  .input-row {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    margin-bottom: 10px;
+  }
+  .input-row input[type="text"] {
+    flex: 1;
+    padding: 6px 10px;
+    border-radius: 10px;
+    border: none;
+    outline: none;
+    background: rgba(255,255,255,0.3);
+    color: #333;
+    font-weight: bold;
+  }
+  .drag-drop {
+    flex-shrink: 0;
+    width: 60px;
+    height: 60px;
+    background: rgba(255,255,255,0.25);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #333;
+    font-size: 0.8rem;
+    text-align: center;
+    cursor: pointer;
+    transition: background 0.3s;
+  }
+  .drag-drop.drag-over {
+    background: rgba(255,255,255,0.5);
+  }
+
+  /* Cards Container */
+  .cards-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 20px;
+    justify-items: center;
+    margin-top: 20px;
+    perspective: 1000px;
+    transition: all 0.5s;
+  }
+  .cards-container.full {
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    margin-left: 0;
+  }
+
+  /* Card Styles */
+  .card {
+    width: 160px;
+    height: 160px;
+    position: relative;
+    cursor: pointer;
+    transform-style: preserve-3d;
+    transition: transform 0.6s;
+  }
+  .card:hover {
+    transform: rotateY(5deg) translateY(-5px) scale(1.05);
+  }
+  .card.flipped {
+    transform: rotateY(180deg);
+  }
+  .card-face {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    backface-visibility: hidden;
+    border-radius: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 1.2rem;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+  }
+  .card-back {
+    background: repeating-linear-gradient(45deg,#FFB6C1,#FFB6C1 10px,#FFD700 10px,#FFD700 20px);
+    color: #333;
+  }
+  .card-front {
+    background: rgba(255,255,255,0.9);
+    color: #333;
+    transform: rotateY(180deg);
+    overflow: hidden;
+  }
+  .card-front img {
+    max-width: 80%;
+    max-height: 80%;
+    border-radius: 12px;
+  }
+
+  /* Matched Animation */
+  .matched {
+    animation: pulse 0.5s ease;
+  }
+  @keyframes pulse {
+    0% { transform: scale(1); box-shadow: 0 5px 15px rgba(0,0,0,0.2); }
+    50% { transform: scale(1.2); box-shadow: 0 10px 25px rgba(0,0,0,0.4); }
+    100% { transform: scale(1); box-shadow: 0 5px 15px rgba(0,0,0,0.2); }
+  }
+
+  /* Confetti */
+  .confetti {
+    position: fixed;
+    width: 10px;
+    height: 10px;
+    top: 0;
+    border-radius: 50%;
+    animation: fall 2s linear infinite;
+  }
+  @keyframes fall {
+    to { transform: translateY(100vh) rotate(360deg); opacity: 0; }
+  }
+</style>
+</head>
+<body class="p-5">
+
+<!-- Hamburger -->
+<div class="hamburger" id="hamburger" style="display:none;">
+  <span></span>
+  <span></span>
+  <span></span>
+</div>
+
+<div class="flex flex-col md:flex-row gap-5">
+  <!-- Input Panel -->
+  <div class="input-panel" id="inputPanel">
+    <h2 class="text-2xl mb-4 font-bold text-gray-800">Setup Memory Match</h2>
+    <select id="card-count" class="w-full p-2 mb-4 rounded-lg bg-white/30 text-gray-800 font-bold">
+      <option value="9">9 Cards</option>
+      <option value="12">12 Cards</option>
+      <option value="16">16 Cards</option>
+    </select>
+    <div id="inputs-wrapper"></div>
+    <button id="start-game" class="w-full bg-pink-400 text-gray-900 py-2 mt-3 rounded-xl hover:bg-pink-500 transition font-bold">Start Game</button>
+  </div>
+
+  <!-- Game Area -->
+  <div class="flex-1">
+    <div class="cards-container" id="cards-container"></div>
+  </div>
+</div>
+
+<script>
+const cardCountSelect = document.getElementById('card-count');
+const inputsWrapper = document.getElementById('inputs-wrapper');
+const startGameBtn = document.getElementById('start-game');
+const cardsContainer = document.getElementById('cards-container');
+const inputPanel = document.getElementById('inputPanel');
+const hamburger = document.getElementById('hamburger');
+
+let cardData = [];
+
+function createInputs(count) {
+  inputsWrapper.innerHTML = '';
+  cardData = [];
+  for (let i = 0; i < count; i++) {
+    const row = document.createElement('div');
+    row.className = 'input-row';
+
+    const wordInput = document.createElement('input');
+    wordInput.type = 'text';
+    wordInput.placeholder = `Word ${i+1}`;
+    wordInput.dataset.index = i;
+
+    const dragDrop = document.createElement('div');
+    dragDrop.className = 'drag-drop';
+    dragDrop.textContent = 'Drop\nImage';
+    dragDrop.dataset.index = i;
+
+    const fileInput = document.createElement('input');
+    fileInput.type = 'file';
+    fileInput.accept = 'image/*';
+    fileInput.style.display = 'none';
+    fileInput.dataset.index = i;
+
+    dragDrop.addEventListener('click', () => fileInput.click());
+    dragDrop.addEventListener('dragover', e => { e.preventDefault(); dragDrop.classList.add('drag-over'); });
+    dragDrop.addEventListener('dragleave', () => dragDrop.classList.remove('drag-over'));
+    dragDrop.addEventListener('drop', e => {
+      e.preventDefault();
+      dragDrop.classList.remove('drag-over');
+      const file = e.dataTransfer.files[0];
+      if(file && file.type.startsWith('image/')) handleFile(file, i, dragDrop);
+    });
+
+    fileInput.addEventListener('change', e => { const file = e.target.files[0]; if(file) handleFile(file, i, dragDrop); });
+
+    function handleFile(file, index, dropArea) {
+      const reader = new FileReader();
+      reader.onload = () => {
+        cardData[index].image = reader.result;
+        // Use file name as default word
+        const name = file.name.replace(/\.[^/.]+$/, ""); // remove extension
+        cardData[index].word = name;
+        wordInput.value = name;
+      }
+      reader.readAsDataURL(file);
+    }
+
+    wordInput.addEventListener('input', e => { cardData[i].word = e.target.value; });
+
+    row.appendChild(wordInput);
+    row.appendChild(dragDrop);
+    row.appendChild(fileInput);
+    inputsWrapper.appendChild(row);
+
+    cardData.push({ word: '', image: null });
+  }
+}
+
+function generateCards() {
+  cardsContainer.innerHTML = '';
+  let gameCards = [];
+  cardData.forEach(item => {
+    gameCards.push({ type: 'word', content: item.word, pairId: item.word });
+    gameCards.push({ type: 'image', content: item.image, pairId: item.word });
+  });
+
+  gameCards = gameCards.sort(() => Math.random() - 0.5);
+
+  gameCards.forEach(data => {
+    const card = document.createElement('div');
+    card.className = 'card';
+    card.dataset.pairId = data.pairId;
+    card.dataset.type = data.type;
+
+    const back = document.createElement('div');
+    back.className = 'card-face card-back';
+    back.textContent = '?';
+
+    const front = document.createElement('div');
+    front.className = 'card-face card-front';
+    if(data.type === 'word') front.textContent = data.content;
+    else {
+      const img = document.createElement('img');
+      img.src = data.content;
+      front.appendChild(img);
+    }
+
+    card.appendChild(back);
+    card.appendChild(front);
+
+    card.addEventListener('click', () => flipCard(card));
+    cardsContainer.appendChild(card);
+  });
+}
+
+let flippedCards = [];
+
+function flipCard(card) {
+  if(card.classList.contains('flipped') || flippedCards.length >= 2) return;
+  card.classList.add('flipped');
+  flippedCards.push(card);
+
+  if(flippedCards.length === 2) {
+    const [first, second] = flippedCards;
+    if(first.dataset.pairId === second.dataset.pairId && first.dataset.type !== second.dataset.type) {
+      first.classList.add('matched');
+      second.classList.add('matched');
+      flippedCards = [];
+      if(document.querySelectorAll('.card:not(.flipped)').length === 0) winCelebration();
+    } else {
+      setTimeout(() => {
+        first.classList.remove('flipped');
+        second.classList.remove('flipped');
+        flippedCards = [];
+      }, 1000);
+    }
+  }
+}
+
+function winCelebration() {
+  for(let i=0;i<50;i++){
+    const confetti = document.createElement('div');
+    confetti.className='confetti';
+    confetti.style.left=Math.random()*window.innerWidth+'px';
+    confetti.style.background=`hsl(${Math.random()*360}, 100%, 70%)`;
+    confetti.style.animationDuration=1+Math.random()*2+'s';
+    document.body.appendChild(confetti);
+    setTimeout(()=>confetti.remove(),3000);
+  }
+}
+
+// Start game
+startGameBtn.addEventListener('click', () => {
+  if(cardData.some(c=>!c.word||!c.image)) {
+    alert('Please fill in all words and add all images!');
+    return;
+  }
+  inputPanel.classList.add('hidden');
+  hamburger.style.display = 'flex';
+  cardsContainer.classList.add('full');
+  generateCards();
+});
+
+// Hamburger toggle
+hamburger.addEventListener('click', () => {
+  if(inputPanel.classList.contains('hidden')) {
+    inputPanel.classList.remove('hidden');
+    cardsContainer.classList.remove('full');
+  } else {
+    inputPanel.classList.add('hidden');
+    cardsContainer.classList.add('full');
+  }
+});
+
+cardCountSelect.addEventListener('change', () => createInputs(parseInt(cardCountSelect.value)));
+
+createInputs(parseInt(cardCountSelect.value));
+</script>
+</body>
+</html>

@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Account — Profile & Settings</title>
+  <link rel="stylesheet" href="account.css" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js/dist/umd/supabase.min.js"></script>
+</head>
+<body>
+  <div class="account-app">
+    <header class="account-header">
+      <a href="teachers.html" class="back-link">← Back to Teacher Portal</a>
+      <h1>Account</h1>
+    </header>
+    <main class="account-main">
+      <section class="profile-section">
+        <h2>Profile</h2>
+        <form id="accountForm" autocomplete="off">
+          <div class="avatar-block">
+            <label for="accountAvatarInput" class="avatar-label">
+              <span class="avatar-wrap">
+                <img id="accountAvatarEdit" src="" alt="Avatar" />
+              </span>
+              <input type="file" id="accountAvatarInput" accept="image/*" style="display:none;" />
+              <span class="avatar-change">Change Avatar</span>
+            </label>
+            <div class="avatar-choices" id="avatarChoices"></div>
+          </div>
+          <div class="input-block">
+            <label for="accountNameInput">Name</label>
+            <input type="text" id="accountNameInput" autocomplete="name" />
+          </div>
+          <div class="input-block">
+            <label for="accountEmailInput">Email</label>
+            <input type="email" id="accountEmailInput" disabled style="background:rgba(255,255,255,0.5);color:#888;font-weight:600;" />
+          </div>
+          <div class="input-block">
+            <label for="oldPasswordInput">Current Password</label>
+            <input type="password" id="oldPasswordInput" placeholder="Enter current password to change password" autocomplete="current-password" />
+          </div>
+          <div class="input-block">
+            <label for="accountPasswordInput">New Password</label>
+            <input type="password" id="accountPasswordInput" placeholder="Leave blank to keep current" autocomplete="new-password" />
+          </div>
+          <div class="form-actions">
+            <button type="submit" class="action-btn">Save Changes</button>
+          </div>
+        </form>
+      </section>
+      <section class="account-actions-section">
+        <button id="signOutBtn" class="danger-btn">Log Out</button>
+      </section>
+    </main>
+  </div>
+  <script src="account.js"></script>
+</body>
+</html>

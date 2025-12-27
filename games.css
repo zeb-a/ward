@@ -1,0 +1,188 @@
+body {
+  margin: 0;
+  font-family: 'Poppins', system-ui, sans-serif;
+  background: #f6f8fb;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+}
+
+.header-menu {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  gap: 14px;
+  background: rgba(255,255,255,0.85);
+  box-shadow: 0 2px 16px #7b4cff11;
+  padding: 0 32px;
+  height: 64px;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  flex-shrink: 0;
+}
+
+.game-frame {
+  width: 100vw;
+  height: calc(100vh - 64px); /* Take full remaining height */
+  border: none;
+  background: #f6f8fb;
+  display: block;
+  margin: 0;
+  padding: 0;
+  box-shadow: none;
+  flex-grow: 1;
+}
+#app {
+  max-width: 820px;
+  margin: 56px auto 32px auto;
+  background: rgba(255,255,255,0.32);
+  border-radius: 32px;
+  box-shadow: 0 16px 64px 0 rgba(60,40,120,0.18), 0 2px 16px 0 rgba(123,76,255,0.10);
+  padding: 48px 40px 36px 40px;
+  backdrop-filter: blur(32px) saturate(1.5);
+  border: 2.5px solid rgba(123,76,255,0.10);
+  position: relative;
+  overflow: hidden;
+}
+
+.glass-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 24px;
+  background: rgba(255,255,255,0.38);
+  border-radius: 18px;
+  box-shadow: 0 2px 16px rgba(123,76,255,0.08);
+  padding: 16px 18px;
+  margin-bottom: 36px;
+  backdrop-filter: blur(18px) saturate(1.2);
+  border: 1.5px solid rgba(123,76,255,0.10);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.games-menu {
+  display: flex;
+  flex-direction: row;
+  gap: 18px;
+  justify-content: center;
+  width: 100%;
+}
+.games-menu button {
+  background: linear-gradient(135deg,#f7f8fa 0%,#e0e7ff 100%);
+  color: #7b4cff;
+  border: none;
+  border-radius: 14px;
+  padding: 16px 32px;
+  font-weight: 800;
+  font-size: 1.13em;
+  cursor: pointer;
+  transition: background 0.18s, box-shadow 0.15s, color 0.18s;
+  box-shadow: 0 2px 12px rgba(123,76,255,0.10);
+  letter-spacing: 0.01em;
+  backdrop-filter: blur(8px);
+  outline: none;
+  border: 2.5px solid transparent;
+}
+.games-menu button.selected, .games-menu button:focus, .games-menu button:hover {
+  background: linear-gradient(135deg,#7b4cff 0%,#a084ff 100%);
+  color: #fff;
+  border: 2.5px solid #7b4cff;
+  box-shadow: 0 4px 24px rgba(123,76,255,0.13);
+}
+
+.game-section {
+  margin-top: 32px;
+  background: rgba(255,255,255,0.44);
+  border-radius: 22px;
+  box-shadow: 0 4px 32px rgba(123,76,255,0.10);
+  padding: 36px 32px 32px 32px;
+  backdrop-filter: blur(18px) saturate(1.2);
+  border: 1.5px solid rgba(123,76,255,0.10);
+  position: relative;
+  overflow: hidden;
+}
+
+.game-section h2 {
+  font-size: 1.6em;
+  color: #7b4cff;
+  margin-bottom: 18px;
+  font-weight: 900;
+  letter-spacing: 0.01em;
+}
+.game-section p {
+  color: #555;
+  font-size: 1.08em;
+  margin-bottom: 18px;
+}
+.game-section form {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+.game-section textarea, .game-section input[type="text"] {
+  width: 100%;
+  padding: 14px 16px;
+  border-radius: 12px;
+  border: 1.5px solid #e6e9ef;
+  font-size: 1.08em;
+  background: rgba(249,250,253,0.85);
+  transition: border 0.15s, box-shadow 0.15s;
+  box-shadow: 0 1px 4px rgba(123,76,255,0.04);
+  resize: vertical;
+}
+.game-section textarea:focus, .game-section input[type="text"]:focus {
+  border: 1.5px solid #7b4cff;
+  outline: none;
+  box-shadow: 0 2px 8px rgba(123,76,255,0.10);
+}
+.game-section input[type="file"] {
+  margin-bottom: 8px;
+}
+.action-btn {
+  background: linear-gradient(135deg,#7b4cff,#a084ff);
+  color: #fff;
+  border: none;
+  border-radius: 12px;
+  padding: 13px 28px;
+  font-weight: 700;
+  font-size: 1.08em;
+  cursor: pointer;
+  transition: background 0.18s, box-shadow 0.15s;
+  box-shadow: 0 2px 8px rgba(123,76,255,0.10);
+}
+.action-btn:hover {
+  background: linear-gradient(135deg,#3b1f7a,#7b4cff);
+  box-shadow: 0 4px 16px rgba(123,76,255,0.13);
+}
+.image-preview {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 8px;
+}
+.image-preview img {
+  width: 64px;
+  height: 64px;
+  object-fit: cover;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(123,76,255,0.10);
+  border: 1.5px solid #e0e7ff;
+}
+
+@media (max-width: 900px) {
+  #app {
+    padding: 18px 4vw 18px 4vw;
+  }
+  .glass-topbar {
+    flex-direction: column;
+    gap: 10px;
+    padding: 10px 6px;
+  }
+  .game-section {
+    padding: 18px 6vw 18px 6vw;
+  }
+}

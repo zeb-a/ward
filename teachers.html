@@ -1,0 +1,409 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Teacher — Classes</title>
+
+  <link rel="stylesheet" href="teachers.css" />
+</head>
+
+<body>
+  <!-- Supabase session gate: ensure user is logged in before viewing teacher portal -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js/dist/umd/supabase.min.js"></script>
+
+  <div class="app-topline force-top-topline"
+    style="width:100%;display:flex;align-items:center;justify-content:flex-end;padding:12px 24px 0 24px;box-sizing:border-box;z-index:2000;position:relative;background:transparent;">
+    <div style="display:flex;align-items:center;gap:18px;flex:1;min-width:0">
+      <button id="mobileMenuBtn" aria-label="Open menu" title="Menu"
+        style="display:none;border:0;background:transparent;font-size:20px;padding:6px;">☰</button>
+      <div style="display:flex;flex-direction:column;gap:6px;min-width:0">
+        <div id="currentMeta"
+          style="color:#3b1f7a;font-weight:800;font-family:Inter,system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;background:rgba(123,76,255,0.08);padding:6px 10px;border-radius:8px;display:inline-block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:56ch;margin-right:18px">
+          Class Name</div>
+        <div class="counts" id="classCounts" style="color:var(--muted);font-size:13px;margin-right:18px">0 students · 0
+          tasks</div>
+      </div>
+    </div>
+    <a href="reports.html" id="btnReportsTopline" class="action-btn"
+      style="background:linear-gradient(135deg,#88dd88,#66cc66);transition:background 0.18s;">📊 <span
+        class="btn-label">Reports</span></a>
+    <script>
+      // Store class info in localStorage when Reports button is clicked
+      document.addEventListener('DOMContentLoaded', function () {
+        var btn = document.getElementById('btnReportsTopline');
+        if (btn) {
+          btn.addEventListener('click', function () {
+            var className = document.getElementById('currentMeta')?.textContent || '';
+            var classCounts = document.getElementById('classCounts')?.textContent || '';
+            // Try to get students from the currently open class context
+            var students = [];
+            if (window.currentClass && Array.isArray(window.currentClass.students) && window.currentClass.students.length) {
+              students = window.currentClass.students;
+            } else {
+              // Fallback: extract from DOM
+              var stuEls = document.querySelectorAll('.child-card[data-student-id]');
+              stuEls.forEach(function (el) {
+                var nameEl = el.querySelector('.door-name, .name-tag');
+                students.push({
+                  id: el.getAttribute('data-student-id'),
+                  name: nameEl ? nameEl.textContent : el.getAttribute('data-student-id')
+                });
+              });
+            }
+            localStorage.setItem('currentClassStudents', JSON.stringify(students));
+            localStorage.setItem('currentClassName', className);
+            localStorage.setItem('currentClassCounts', classCounts);
+          });
+        }
+      });
+    </script>
+    <div id="accountMenu" style="position:relative; margin-left:18px;">
+      <button id="accountBtn" class="small-btn" aria-haspopup="true" aria-expanded="false"
+        style="display:flex;align-items:center;gap:8px;padding:6px;border-radius:999px">
+        <img id="accountAvatar" src="" alt="Account"
+          style="width:28px;height:28px;border-radius:999px;object-fit:cover;background:#fff" />
+        <span style="font-weight:800">▾</span>
+      </button>
+      <style>
+        #accountDropdown {
+          position: absolute;
+          right: 0;
+          top: 42px;
+          display: none;
+          min-width: 270px;
+          background: rgba(255,255,255,0.22);
+          border-radius: 22px;
+          box-shadow: 0 12px 36px 0 rgba(20,30,80,0.16), 0 1.5px 8px 0 rgba(123,76,255,0.10);
+          padding: 18px 18px 12px 18px;
+          z-index: 1400;
+          backdrop-filter: blur(18px) saturate(1.4);
+          border: 1.5px solid rgba(180,180,255,0.18);
+        }
+        #accountDropdown #accountOverview {
+          padding: 0 0 18px 0;
+          display: flex;
+          align-items: center;
+          gap: 18px;
+          border-bottom: 1.5px solid rgba(200,200,255,0.13);
+          margin-bottom: 16px;
+        }
+        #accountDropdown #accountAvatarDropdown {
+          width: 54px;
+          height: 54px;
+          border-radius: 50%;
+          object-fit: cover;
+          background: rgba(246,250,255,0.7);
+          border: 2.5px solid #e0f3ff;
+          box-shadow: 0 2px 12px rgba(123,76,255,0.10);
+        }
+        #accountDropdown #acctName {
+          font-weight: 900;
+          font-size: 1.18em;
+          color: #2a1a4d;
+          letter-spacing: 0.01em;
+          margin-bottom: 2px;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+        }
+        #accountDropdown #acctEmail {
+          color: #6a6a8a;
+          font-size: 13.5px;
+          font-weight: 600;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+        }
+        #accountDropdown .account-actions {
+          display: flex;
+          flex-direction: column;
+          gap: 12px;
+          margin-top: 10px;
+        }
+        #accountDropdown .account-action-link {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          font-size: 1.08em;
+          font-weight: 700;
+          color: #3b1f7a;
+          background: rgba(255,255,255,0.38);
+          border-radius: 12px;
+          padding: 12px 18px;
+          text-decoration: none;
+          transition: background 0.18s, color 0.18s, box-shadow 0.18s;
+          box-shadow: 0 1.5px 8px 0 rgba(123,76,255,0.06);
+        }
+        #accountDropdown .account-action-link:hover {
+          background: linear-gradient(135deg, #e0e7ff 60%, #f3f0ff 100%);
+          color: #7b4cff;
+          box-shadow: 0 4px 18px 0 rgba(123,76,255,0.13);
+        }
+        #accountDropdown .account-action-link.logout {
+          color: #fff;
+          background: linear-gradient(135deg, #ff6b6b 60%, #ff4b4b 100%);
+          font-weight: 900;
+          box-shadow: 0 2px 12px 0 rgba(255,76,76,0.13);
+        }
+        #accountDropdown .account-action-link.logout:hover {
+          background: linear-gradient(135deg, #ffb6b6 60%, #ff4b4b 100%);
+          color: #fff;
+        }
+      </style>
+      <div id="accountDropdown">
+        <div id="accountOverview">
+          <img id="accountAvatarDropdown" src="" alt="Account" />
+          <div style="min-width:0;">
+            <div id="acctName"></div>
+            <div id="acctEmail"></div>
+          </div>
+        </div>
+        <div class="account-actions">
+          <a href="account.html" id="profileBtn" class="account-action-link"><span>👤</span> Profile</a>
+          <a href="help.html" id="helpBtn" class="account-action-link"><span>❓</span> Help</a>
+<button id="signOutBtn" class="account-action-link logout" type="button">
+  <span>🚪</span> Log Out
+</button>        </div>
+      </div>
+    </div>
+  </div>
+  <div class="app">
+    <aside id="sidebar" class="sidebar" style="overflow:auto;height:100vh;box-sizing:border-box;">
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:8px">
+        <div class="brand">
+          <div class="logo">TD</div>
+          <div class="brand-text">Teacher</div>
+        </div>
+        <div>
+          <button id="collapseBtn" class="toggle-btn" title="Toggle panel">☰</button>
+        </div>
+      </div>
+
+      <div class="side-actions">
+        <div id="classesHeader" style="font-size:14px;color:var(--muted);font-weight:700;cursor:pointer">Your Classes</div>
+        <style>
+          /* Make the header clearly interactive: larger chevron + stronger peek hint */
+          #classesHeader { position: relative; }
+          /* larger, more visible chevron with a soft pill background */
+          #classesHeader::after {
+            content: '▾';
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%) rotate(0deg);
+            opacity: .9;
+            color: #6b3bff;
+            font-weight: 900;
+            transition: opacity .12s ease, transform .16s ease;
+            pointer-events: none;
+            font-size: 1.35em;
+            background: rgba(123,76,255,0.08);
+            padding: 4px 6px;
+            border-radius: 8px;
+            box-shadow: 0 6px 18px rgba(123,76,255,0.06);
+          }
+          #classesHeader:hover::after { opacity: 1; transform: translateY(-50%) translateX(6px) rotate(0deg); }
+          /* When open, rotate the chevron */
+          #classesHeader.open::after { opacity: 1; transform: translateY(-50%) translateX(6px) rotate(180deg); }
+
+          /* subtle, more visible peek bar under header when collapsed to indicate hidden content */
+          #classesHeader:not(.open)::before {
+            content: '';
+            position: absolute;
+            left: 6px;
+            right: 6px;
+            height: 8px;
+            bottom: -10px;
+            background: linear-gradient(90deg, rgba(123,76,255,0.16), rgba(123,76,255,0.06));
+            border-radius: 6px;
+            opacity: 1;
+            pointer-events: none;
+          }
+
+          /* slight collapsed background to hint content underneath (very subtle) */
+          #classesHeader:not(.open) {
+            background: rgba(123,76,255,0.02);
+            padding: 6px 0;
+            border-radius: 6px;
+          }
+        </style>
+        <div id="classList" class="class-list" role="list" aria-hidden="true" style="display:none"></div>
+        <div class="new-class" style="margin:18px 0 0 0;">
+          <button id="openCreateClassBtn" class="action-btn"><span class="btn-icon">＋</span><span class="btn-label">Add New class</span></button>
+        </div>
+        <div class="side-actions-buttons" style="margin-top:12px;display:flex;flex-direction:column;gap:8px">
+          <button id="btnAddStudent" class="action-btn">➕ <span class="btn-label">Add / Edit students</span></button>
+          <button id="btnAddTasks" class="action-btn"
+            style="background:linear-gradient(135deg,#7dd7ff,#5bbfff);color:#00334a">🛠 <span class="btn-label">Add
+              Tasks</span></button>
+          <button id="btnReports" class="action-btn" style="background:linear-gradient(135deg,#88dd88,#66cc66);">📊
+            <span class="btn-label">Generate Reports</span></button>
+          <button id="btnRemoveClass" class="small-btn"
+            style="background:linear-gradient(135deg,#ff6b6b,#ff4b4b);color:#fff">🗑 <span class="btn-label">Remove
+              Class</span></button>
+          <div id="optionsWrap" style="position:relative">
+            <button id="optionsToggleBtn" class="small-btn" aria-expanded="false" title="Options">Options</button>
+            <div id="optionsMenu"
+              style="position:absolute;left:0;top:40px;min-width:160px;background:#fff;border-radius:10px;box-shadow:0 12px 36px rgba(20,30,80,0.08);padding:8px;display:none;z-index:60">
+              <button id="archiveClassBtn" class="small-btn"
+                style="width:100%;margin-bottom:8px;background:linear-gradient(135deg,#ffb86b,#ff9a44);color:#3a1f00">Archive</button>
+              <button id="deleteClassBtn" class="small-btn"
+                style="width:100%;background:linear-gradient(135deg,#ff6b6b,#ff4b4b);">Delete</button>
+            </div>
+          </div>
+        </div>
+        <!-- New Games Section -->
+        <div class="games-section" style="margin-top:36px;padding-top:18px;border-top:2px solid #ecebfa;">
+          <div style="font-size:14px;color:#7b4cff;font-weight:900;margin-bottom:10px;letter-spacing:0.01em;">Games</div>
+          <button id="btnGames" class="action-btn" style="background:linear-gradient(135deg,#ffe066,#ffb347);color:#7b4c00;font-weight:800;box-shadow:0 2px 12px rgba(255,176,71,0.10);">
+            🎮 <span class="btn-label">Play / Create Games</span>
+          </button>
+        </div>
+
+
+      <!-- Games section stays visually separated below -->
+      <div class="sidebar-footer">Tip: Click a class to open its page</div>
+    </aside>
+
+  <script>
+    // Minimal, non-invasive collapsible behavior: header toggles #classList display
+    document.addEventListener('DOMContentLoaded', function () {
+      try {
+        const header = document.getElementById('classesHeader');
+        const list = document.getElementById('classList');
+        if (!header || !list) return;
+
+        // Default collapsed (hidden) without changing existing styles
+        list.style.display = 'none';
+        list.setAttribute('aria-hidden', 'true');
+
+        header.addEventListener('click', function () {
+          const hidden = getComputedStyle(list).display === 'none';
+          if (hidden) {
+            list.style.display = '';
+            list.setAttribute('aria-hidden', 'false');
+            header.classList.add('open');
+            try { localStorage.setItem('classesListOpen', '1'); } catch (e) {}
+          } else {
+            list.style.display = 'none';
+            list.setAttribute('aria-hidden', 'true');
+            header.classList.remove('open');
+            try { localStorage.setItem('classesListOpen', '0'); } catch (e) {}
+          }
+        });
+
+        // Keep aria-hidden in sync if content is changed elsewhere
+        const mo = new MutationObserver(() => {
+          if (getComputedStyle(list).display !== 'none') {
+            list.setAttribute('aria-hidden', 'false');
+            header.classList.add('open');
+          }
+        });
+        mo.observe(list, { childList: true, subtree: true });
+
+        // Restore persisted state (if any)
+        try {
+          const stored = localStorage.getItem('classesListOpen');
+          if (stored === '1') {
+            list.style.display = '';
+            list.setAttribute('aria-hidden', 'false');
+            header.classList.add('open');
+          } else if (stored === '0') {
+            list.style.display = 'none';
+            list.setAttribute('aria-hidden', 'true');
+            header.classList.remove('open');
+          }
+        } catch (e) {
+          // ignore localStorage errors
+        }
+      } catch (e) {
+        console.warn('classList toggle init failed', e);
+      }
+    });
+  </script>
+
+    <main class="main">
+
+
+      <section id="welcome" class="grid">
+        <div class="card">
+          <h3>Welcome</h3>
+          <p>Select a class from the left to view or manage it.</p>
+        </div>
+        <div class="card">
+          <h3>Create a class</h3>
+          <p>Use the left panel to add a new class quickly.</p>
+        </div>
+        <div class="card">
+          <h3>Modern UI</h3>
+          <p>Large central actions will appear when a class is open.</p>
+        </div>
+      </section>
+
+      <section id="classArea" style="display:none">
+        <!-- details moved to topbar for compact layout; actions are available in the sidebar -->
+
+        <!-- Single child list lives here (hidden until a class is opened) -->
+        <div id="childList" class="child-list" style="margin-top:18px;display:none"></div>
+      </section>
+
+    </main>
+  </div>
+   <script src="teachers.js"></script>
+<script>
+// This MUST run after teachers.js loads to access the Supabase client
+document.addEventListener('DOMContentLoaded', function() {
+  // Get the sign-out button
+  const signOutBtn = document.getElementById('signOutBtn');
+  
+  if (signOutBtn) {
+    // Remove any existing click handlers to prevent conflicts
+    const clonedBtn = signOutBtn.cloneNode(true);
+    signOutBtn.parentNode.replaceChild(clonedBtn, signOutBtn);
+    
+    // Add fresh click handler
+    clonedBtn.addEventListener('click', async function(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      
+      // Try to find the Supabase client from your existing code
+      const supabase = window._lf_supabase || window.supabase || 
+                      (typeof supabase !== 'undefined' ? supabase : null);
+      
+      if (!supabase) {
+        console.error('Supabase client not found!');
+        alert('Authentication error. Redirecting to login...');
+        window.location.href = 'index.html';
+        return;
+      }
+      
+      try {
+        console.log('Attempting sign out...');
+        const { error } = await supabase.auth.signOut();
+        
+        if (error) {
+          console.error('Sign out error:', error);
+          throw error;
+        }
+        
+        console.log('Successfully signed out');
+        // Force redirect regardless of any errors
+        window.location.href = 'index.html';
+        
+      } catch (error) {
+        console.error('Sign out failed completely:', error);
+        // Even if sign out fails, clear local state and redirect
+        localStorage.clear();
+        sessionStorage.clear();
+        window.location.href = 'index.html';
+      }
+    });
+  }
+});
+</script>
+ 
+</body>
+
+</html>

@@ -1,0 +1,923 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.jsdelivr.net/npm/phaser@3/dist/phaser.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --bg-primary: #f8fafc;
+            --bg-secondary: #ffffff;
+            --accent-primary: #8b5cf6;
+            --accent-secondary: #6d28d9;
+            --text-primary: #1e293b;
+            --text-secondary: #64748b;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --border-radius: 24px;
+            --shadow-sm: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --shadow-md: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            --shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: linear-gradient(135deg, var(--bg-primary), #e2e8f0);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .app-container {
+            width: 100%;
+            max-width: 1200px;
+            background: var(--bg-primary);
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow-lg);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        .header {
+            padding: 24px 32px;
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            color: white;
+            text-align: center;
+            border-bottom-left-radius: 40px;
+            border-bottom-right-radius: 40px;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            font-weight: 800;
+            margin-bottom: 8px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .main-content {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 24px;
+            padding: 24px;
+            min-height: 600px;
+        }
+
+        .control-panel {
+            flex: 1;
+            min-width: 320px;
+            background: var(--bg-secondary);
+            border-radius: var(--border-radius);
+            padding: 24px;
+            box-shadow: var(--shadow-md);
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .panel-section {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .panel-section h2 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .panel-section h2 i {
+            color: var(--accent-primary);
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .input-group label {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+        }
+
+        textarea {
+            width: 100%;
+            height: 160px;
+            padding: 16px;
+            border-radius: 16px;
+            border: 2px solid #e2e8f0;
+            resize: none;
+            font-family: inherit;
+            font-size: 1rem;
+            line-height: 1.5;
+            transition: var(--transition);
+            background: #f8fafc;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: var(--accent-primary);
+            box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.2);
+        }
+
+        .btn {
+            padding: 16px 24px;
+            border-radius: 16px;
+            border: none;
+            font-weight: 700;
+            font-size: 1.1rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            transition: var(--transition);
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            color: white;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-spin {
+            background: linear-gradient(135deg, var(--success), #059669);
+        }
+
+        .btn-update {
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+        }
+
+        .result-display {
+            margin-top: auto;
+            padding: 24px;
+            border-radius: var(--border-radius);
+            background: linear-gradient(135deg, #f0f9ff, #dbeafe);
+            text-align: center;
+            border: 2px solid #bfdbfe;
+        }
+
+        .result-title {
+            font-size: 1rem;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+        }
+
+        .result-value {
+            font-size: 2.2rem;
+            font-weight: 800;
+            color: var(--accent-primary);
+            min-height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: var(--transition);
+        }
+
+        .result-value.winning {
+            color: var(--success);
+            animation: pulse 0.5s ease-in-out;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        .game-container {
+            flex: 2;
+            min-width: 320px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 24px;
+        }
+
+        .wheel-container {
+            position: relative;
+            width: 100%;
+            max-width: 600px;
+            aspect-ratio: 1/1;
+        }
+
+        #game {
+            width: 100%;
+            height: 100%;
+        }
+
+        .wheel-center {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 120px;
+            height: 120px;
+            background: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: var(--shadow-md);
+            border: 4px solid var(--accent-primary);
+            z-index: 10;
+        }
+
+        .wheel-center i {
+            font-size: 2.5rem;
+            color: var(--accent-primary);
+            text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .spin-indicator {
+            position: absolute;
+            top: -40px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 0;
+            border-left: 20px solid transparent;
+            border-right: 20px solid transparent;
+            border-top: 40px solid var(--accent-primary);
+            z-index: 20;
+        }
+
+        .audio-controls {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            margin-top: 16px;
+        }
+
+        .volume-control {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .volume-icon {
+            color: var(--text-secondary);
+            font-size: 1.2rem;
+        }
+
+        .volume-slider {
+            width: 150px;
+            -webkit-appearance: none;
+            height: 6px;
+            border-radius: 3px;
+            background: #cbd5e1;
+            outline: none;
+        }
+
+        .volume-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: var(--accent-primary);
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .volume-slider::-webkit-slider-thumb:hover {
+            transform: scale(1.2);
+        }
+
+        .loading {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(255,255,255,0.9);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: var(--border-radius);
+            z-index: 100;
+            display: none;
+        }
+
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid rgba(139, 92, 246, 0.2);
+            border-top: 5px solid var(--accent-primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .audio-status {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            text-align: center;
+            margin-top: 8px;
+        }
+
+        @media (max-width: 768px) {
+            .app-container {
+                border-radius: 16px;
+            }
+            
+            .header {
+                border-radius: 0;
+                border-bottom-left-radius: 24px;
+                border-bottom-right-radius: 24px;
+                padding: 16px;
+            }
+            
+            .header h1 {
+                font-size: 1.8rem;
+            }
+            
+            .main-content {
+                flex-direction: column;
+                padding: 16px;
+            }
+            
+            .wheel-container {
+                max-width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- <div class="header">
+            <h1><i class="fas fa-gem"></i> Modern Spin Wheel</h1>
+            <p>Customize your wheel items and enjoy a beautiful spinning experience with immersive sound effects</p>
+        </div> -->
+        
+        <div class="main-content">
+            <div class="control-panel">
+                <div class="panel-section">
+                    <h2><i class="fas fa-list"></i> Wheel Items</h2>
+                    <div class="input-group">
+                        <label for="input">Format: Label | Weight (higher = more common)</label>
+                        <textarea id="input" placeholder="Enter items in format: Label | Weight&#10;&#10;Example:&#10;+100 Points | 5&#10;Bonus Round | 2&#10;Bankrupt | 1">+100 Points | 5
+Bonus Round | 3
+Jackpot | 1
+Double Points | 2
+Free Spin | 2
+Lose Turn | 1</textarea>
+                    </div>
+                    <button class="btn btn-update" onclick="updateWheel()">
+                        <i class="fas fa-sync-alt"></i> Update Wheel
+                    </button>
+                </div>
+                
+                <div class="panel-section">
+                    <h2><i class="fas fa-cog"></i> Settings</h2>
+                    <div class="audio-controls">
+                        <div class="volume-control">
+                            <i class="fas fa-volume-up volume-icon" id="volumeIcon"></i>
+                            <input type="range" min="0" max="1" step="0.1" value="0.7" class="volume-slider" id="volumeSlider">
+                        </div>
+                    </div>
+                    <div class="audio-status" id="audioStatus">Audio: Ready</div>
+                </div>
+                
+                <div class="result-display">
+                    <div class="result-title">RESULT</div>
+                    <div class="result-value" id="result">Spin to reveal!</div>
+                </div>
+                
+                <button class="btn btn-spin" id="spinButton" onclick="spinWheel()">
+                    <i class="fas fa-sync-alt"></i> SPIN WHEEL
+                </button>
+            </div>
+            
+            <div class="game-container">
+                <div class="wheel-container">
+                    <div class="loading" id="loading">
+                        <div class="spinner"></div>
+                    </div>
+                    <div id="game"></div>
+                    <div class="wheel-center">
+                        <i class="fas fa-star"></i>
+                    </div>
+                    <div class="spin-indicator"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Reliable sound effect URLs - using multiple fallbacks
+        const SOUND_EFFECTS = {
+            spinStart: [
+                'https://assets.mixkit.co/sfx/preview/mixkit-winning-chimes-2015.mp3',
+                'https://www.freesound.org/data/previews/325/325147_1281350-lq.mp3',
+                'https://cdn.freesound.org/previews/419/419217_6369233-lq.mp3'
+            ],
+            tick: [
+                'https://assets.mixkit.co/sfx/preview/mixkit-quick-click-2977.mp3',
+                'https://www.freesound.org/data/previews/352/352904_6614659-lq.mp3',
+                'https://cdn.freesound.org/previews/352/352904_6614659-lq.mp3'
+            ],
+            win: [
+                'https://assets.mixkit.co/sfx/preview/mixkit-winning-trumpets-2022.mp3',
+                'https://www.freesound.org/data/previews/371/371910_6614659-lq.mp3',
+                'https://cdn.freesound.org/previews/371/371910_6614659-lq.mp3'
+            ],
+            spinEnd: [
+                'https://assets.mixkit.co/sfx/preview/mixkit-arcade-game-jump-coin-216.mp3',
+                'https://www.freesound.org/data/previews/270/270526_4482020-lq.mp3',
+                'https://cdn.freesound.org/previews/270/270526_4482020-lq.mp3'
+            ]
+        };
+
+        let sceneRef, wheel, segments = [], sliceAngle;
+        let spinning = false;
+        let sounds = {};
+        let lastTickIndex = null;
+        let audioContext = null;
+        const volumeSlider = document.getElementById('volumeSlider');
+        const volumeIcon = document.getElementById('volumeIcon');
+        const spinButton = document.getElementById('spinButton');
+        const loadingElement = document.getElementById('loading');
+        const audioStatusElement = document.getElementById('audioStatus');
+
+        // Initialize audio context on user interaction
+        function initAudioContext() {
+            if (!audioContext) {
+                try {
+                    audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                    audioStatusElement.textContent = 'Audio: Ready';
+                    audioStatusElement.style.color = '#10b981';
+                    return true;
+                } catch (error) {
+                    console.error('Failed to initialize audio context:', error);
+                    audioStatusElement.textContent = 'Audio: Disabled (browser issue)';
+                    audioStatusElement.style.color = '#ef4444';
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        // Update volume icon based on slider value
+        function updateVolumeIcon() {
+            const volume = parseFloat(volumeSlider.value);
+            if (volume === 0) {
+                volumeIcon.className = 'fas fa-volume-mute volume-icon';
+            } else if (volume < 0.5) {
+                volumeIcon.className = 'fas fa-volume-down volume-icon';
+            } else {
+                volumeIcon.className = 'fas fa-volume-up volume-icon';
+            }
+        }
+
+        volumeSlider.addEventListener('input', updateVolumeIcon);
+        updateVolumeIcon();
+
+        const config = {
+            type: Phaser.AUTO,
+            width: 600,
+            height: 600,
+            backgroundColor: "#f8fafc",
+            parent: "game",
+            scene: { create, update },
+            scale: {
+                mode: Phaser.Scale.FIT,
+                autoCenter: Phaser.Scale.CENTER_BOTH
+            },
+            physics: {
+                default: 'arcade',
+                arcade: {
+                    gravity: { y: 0 }
+                }
+            }
+        };
+
+        // Preload sounds with fallbacks
+        async function preloadSounds() {
+            return new Promise(async (resolve) => {
+                if (!initAudioContext()) {
+                    resolve();
+                    return;
+                }
+
+                const soundsToLoad = Object.keys(SOUND_EFFECTS);
+                let loadedCount = 0;
+                let totalAttempts = 0;
+                const maxAttempts = soundsToLoad.length * SOUND_EFFECTS.spinStart.length;
+
+                const loadSound = async (soundName, urls, index = 0) => {
+                    if (index >= urls.length) {
+                        console.warn(`All attempts failed for ${soundName}`);
+                        loadedCount++;
+                        checkCompletion();
+                        return;
+                    }
+
+                    try {
+                        totalAttempts++;
+                        const response = await fetch(urls[index], { mode: 'cors' });
+                        if (!response.ok) {
+                            throw new Error(`HTTP error! status: ${response.status}`);
+                        }
+                        const data = await response.arrayBuffer();
+                        const audioBuffer = await audioContext.decodeAudioData(data);
+                        sounds[soundName] = audioBuffer;
+                        console.log(`Successfully loaded ${soundName} from ${urls[index]}`);
+                        loadedCount++;
+                        checkCompletion();
+                    } catch (error) {
+                        console.warn(`Failed to load ${soundName} from ${urls[index]}:`, error);
+                        // Try next URL in the fallback list
+                        loadSound(soundName, urls, index + 1);
+                    }
+                };
+
+                const checkCompletion = () => {
+                    if (loadedCount >= soundsToLoad.length || totalAttempts >= maxAttempts) {
+                        if (loadedCount > 0) {
+                            audioStatusElement.textContent = `Audio: ${loadedCount}/${soundsToLoad.length} sounds loaded`;
+                            audioStatusElement.style.color = loadedCount === soundsToLoad.length ? '#10b981' : '#f59e0b';
+                        } else {
+                            audioStatusElement.textContent = 'Audio: All sounds failed to load';
+                            audioStatusElement.style.color = '#ef4444';
+                        }
+                        resolve();
+                    }
+                };
+
+                // Start loading all sounds
+                soundsToLoad.forEach(soundName => {
+                    loadSound(soundName, SOUND_EFFECTS[soundName]);
+                });
+
+                // Fallback timeout
+                setTimeout(() => {
+                    if (loadedCount < soundsToLoad.length) {
+                        console.log('Sound loading timeout reached');
+                        checkCompletion();
+                    }
+                }, 5000);
+            });
+        }
+
+        async function initializeGame() {
+            loadingElement.style.display = 'flex';
+            
+            try {
+                await preloadSounds();
+                new Phaser.Game(config);
+            } catch (error) {
+                console.error('Error initializing game:', error);
+                audioStatusElement.textContent = 'Game: Failed to initialize';
+                audioStatusElement.style.color = '#ef4444';
+            } finally {
+                loadingElement.style.display = 'none';
+            }
+        }
+
+        // Start initialization on page load
+        document.addEventListener('DOMContentLoaded', initializeGame);
+
+        // Also initialize on first user interaction if needed
+        document.addEventListener('click', function initOnInteraction() {
+            if (!audioContext) {
+                initAudioContext();
+            }
+            document.removeEventListener('click', initOnInteraction);
+        }, { once: true });
+
+        function parseInput() {
+            return document.getElementById("input").value
+                .split("\n")
+                .map(l => {
+                    const [label, w] = l.split("|").map(v => v.trim());
+                    return label ? { label, weight: +w || 1 } : null;
+                })
+                .filter(Boolean);
+        }
+
+        function weightedPick(items) {
+            const total = items.reduce((s, i) => s + i.weight, 0);
+            let r = Math.random() * total;
+            for (let i = 0; i < items.length; i++) {
+                if ((r -= items[i].weight) <= 0) return i;
+            }
+            return 0;
+        }
+
+        function playSound(soundName) {
+            try {
+                if (!audioContext || !initAudioContext()) return;
+                
+                const volume = parseFloat(volumeSlider.value);
+                if (volume === 0 || !sounds[soundName]) return;
+                
+                const source = audioContext.createBufferSource();
+                source.buffer = sounds[soundName];
+                
+                const gainNode = audioContext.createGain();
+                gainNode.gain.value = volume;
+                
+                source.connect(gainNode);
+                gainNode.connect(audioContext.destination);
+                
+                source.start(0);
+                
+                return source;
+            } catch (error) {
+                console.warn(`Error playing sound ${soundName}:`, error);
+                // Try to reinitialize audio context
+                if (!audioContext) {
+                    initAudioContext();
+                }
+            }
+        }
+
+        function create() {
+            sceneRef = this;
+            buildWheel(parseInput());
+        }
+
+        function update() {
+            if (!spinning || !wheel) return;
+            
+            // FIX: Use let instead of const for currentAngle since we modify it
+            let currentAngle = wheel.rotation % (Math.PI * 2);
+            if (currentAngle < 0) currentAngle += Math.PI * 2;
+            
+            const idx = Math.floor(currentAngle / sliceAngle);
+            if (idx !== lastTickIndex) {
+                lastTickIndex = idx;
+                
+                // Visual feedback
+                const pointer = document.querySelector('.wheel-center');
+                pointer.style.transform = 'translate(-50%, -50%) scale(1.1)';
+                setTimeout(() => {
+                    pointer.style.transform = 'translate(-50%, -50%) scale(1)';
+                }, 100);
+                
+                // Play tick sound
+                playSound('tick');
+            }
+        }
+
+        function buildWheel(data) {
+            segments = data;
+            if (!segments || segments.length === 0) {
+                segments = [{ label: 'Default', weight: 1 }];
+            }
+
+            if (wheel) {
+                wheel.destroy();
+                wheel = null;
+            }
+
+            const cx = 300, cy = 300, r = 270;
+            sliceAngle = (Math.PI * 2) / segments.length;
+            
+            wheel = sceneRef.add.container(cx, cy);
+            
+            // Create wheel with modern gradient segments
+            const graphics = sceneRef.add.graphics();
+            wheel.add(graphics);
+            
+            let angle = 0;
+            const hueStep = 360 / segments.length;
+            
+            segments.forEach((segment, i) => {
+                // Create vibrant gradient segments
+                const hue = (i * hueStep) % 360;
+                const saturation = 70 + Math.random() * 20;
+                const lightness = 65 + Math.random() * 15;
+                
+                // Outer ring
+                graphics.fillStyle(Phaser.Display.Color.HSVToRGB(hue, saturation/100, lightness/100).color, 1);
+                graphics.slice(0, 0, r, angle, angle + sliceAngle);
+                graphics.fillPath();
+                
+                // Inner ring with darker color
+                graphics.fillStyle(Phaser.Display.Color.HSVToRGB(hue, (saturation + 20)/100, (lightness - 15)/100).color, 1);
+                graphics.slice(0, 0, r * 0.8, angle, angle + sliceAngle);
+                graphics.fillPath();
+                
+                // Segment border
+                graphics.lineStyle(2, 0xffffff, 0.8);
+                graphics.beginPath();
+                graphics.moveTo(0, 0);
+                graphics.lineTo(Math.cos(angle) * r, Math.sin(angle) * r);
+                graphics.strokePath();
+                
+                // Text with modern styling
+                const midAngle = angle + sliceAngle / 2;
+                const textRadius = r * 0.6;
+                const x = Math.cos(midAngle) * textRadius;
+                const y = Math.sin(midAngle) * textRadius;
+                
+                const text = sceneRef.add.text(x, y, segment.label, {
+                    fontSize: '20px',
+                    fontWeight: 'bold',
+                    color: '#ffffff',
+                    fontStyle: 'italic',
+                    stroke: '#000000',
+                    strokeThickness: 2,
+                    align: 'center',
+                    wordWrap: { width: 120 }
+                }).setOrigin(0.5);
+                
+                // Add shadow effect
+                text.setShadow(2, 2, 'rgba(0,0,0,0.5)', 2);
+                
+                wheel.add(text);
+                
+                angle += sliceAngle;
+            });
+            
+            // Add decorative elements
+            addDecorativeElements(graphics, r);
+        }
+
+        function addDecorativeElements(graphics, radius) {
+            // Add decorative rings
+            const rings = [
+                { radius: radius * 0.95, color: 0xffffff, alpha: 0.3, width: 3 },
+                { radius: radius * 0.75, color: 0xffffff, alpha: 0.2, width: 2 },
+                { radius: radius * 0.5, color: 0xffffff, alpha: 0.1, width: 1 }
+            ];
+            
+            rings.forEach(ring => {
+                graphics.lineStyle(ring.width, ring.color, ring.alpha);
+                graphics.beginPath();
+                graphics.arc(0, 0, ring.radius, 0, Math.PI * 2);
+                graphics.strokePath();
+            });
+            
+            // Add decorative dots
+            const dotCount = 24;
+            const dotRadius = radius * 0.92;
+            graphics.fillStyle(0xffffff, 0.8);
+            
+            for (let i = 0; i < dotCount; i++) {
+                const angle = (i * Math.PI * 2) / dotCount;
+                const x = Math.cos(angle) * dotRadius;
+                const y = Math.sin(angle) * dotRadius;
+                graphics.fillCircle(x, y, 4);
+            }
+        }
+
+        function spinWheelInternal() {
+            if (spinning || !wheel) return;
+            
+            spinning = true;
+            spinButton.disabled = true;
+            document.getElementById('result').textContent = 'Spinning...';
+            document.getElementById('result').className = 'result-value';
+            
+            // Play spin start sound
+            playSound('spinStart');
+            
+            lastTickIndex = null;
+            const idx = weightedPick(segments);
+            const spins = Phaser.Math.Between(5, 8); // More spins for better effect
+            const target = spins * Math.PI * 2 + (segments.length - idx - 0.5) * sliceAngle;
+            
+            sceneRef.tweens.add({
+                targets: wheel,
+                rotation: target,
+                duration: 4000 + Math.random() * 1000, // Variable duration for natural feel
+                ease: 'Cubic.easeOut',
+                onComplete: () => {
+                    spinning = false;
+                    spinButton.disabled = false;
+                    
+                    // Play win sound
+                    playSound('win');
+                    
+                    const resultText = segments[idx].label;
+                    const resultElement = document.getElementById('result');
+                    resultElement.textContent = resultText;
+                    resultElement.className = 'result-value winning';
+                    
+                    // Visual celebration effect
+                    celebrateResult(resultText);
+                }
+            });
+        }
+
+        function spinWheel() {
+            // Ensure audio context is resumed on user gesture
+            initAudioContext();
+            
+            if (!wheel) {
+                audioStatusElement.textContent = 'Wheel not ready - please wait';
+                audioStatusElement.style.color = '#ef4444';
+                return;
+            }
+            
+            spinWheelInternal();
+        }
+
+        function celebrateResult(result) {
+            // Create particle effect (simulated with CSS)
+            const wheelCenter = document.querySelector('.wheel-center');
+            wheelCenter.style.animation = 'pulse 0.5s ease-in-out 3';
+            
+            // Change star icon based on result
+            const wheelIcon = wheelCenter.querySelector('i');
+            if (result.toLowerCase().includes('jackpot') || result.toLowerCase().includes('bonus')) {
+                wheelIcon.className = 'fas fa-trophy';
+                wheelIcon.style.color = '#f59e0b';
+            } else if (result.toLowerCase().includes('lose') || result.toLowerCase().includes('bankrupt')) {
+                wheelIcon.className = 'fas fa-times';
+                wheelIcon.style.color = '#ef4444';
+            } else {
+                wheelIcon.className = 'fas fa-gem';
+                wheelIcon.style.color = '#8b5cf6';
+            }
+            
+            // Reset icon after delay
+            setTimeout(() => {
+                wheelIcon.className = 'fas fa-star';
+                wheelIcon.style.color = '#8b5cf6';
+                wheelCenter.style.animation = '';
+            }, 2000);
+        }
+
+        function updateWheel() {
+            const resultElement = document.getElementById('result');
+            resultElement.textContent = 'Spin to reveal!';
+            resultElement.className = 'result-value';
+            
+            loadingElement.style.display = 'flex';
+            setTimeout(() => {
+                buildWheel(parseInput());
+                loadingElement.style.display = 'none';
+                
+                // Play update sound
+                playSound('spinEnd');
+            }, 300);
+        }
+
+        // Touch support improvements
+        document.addEventListener('touchstart', function() {}, true);
+
+        // Handle audio context suspension/resume
+        document.addEventListener('visibilitychange', () => {
+            if (document.visibilityState === 'visible' && audioContext) {
+                if (audioContext.state === 'suspended') {
+                    audioContext.resume().catch(console.error);
+                }
+            }
+        });
+
+        // Handle page visibility changes
+        document.addEventListener('click', () => {
+            if (audioContext && audioContext.state === 'suspended') {
+                audioContext.resume().catch(console.error);
+            }
+        }, { once: true });
+    </script>
+</body>
+</html>

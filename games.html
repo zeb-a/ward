@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Games - Teacher Portal</title>
+  <link rel="stylesheet" href="games.css">
+  <script src="https://unpkg.com/preact@10.15.1/dist/preact.umd.js"></script>
+  <script src="https://unpkg.com/preact@10.15.1/hooks/dist/hooks.umd.js"></script>
+</head>
+<body>
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Poppins', system-ui, sans-serif;
+      background: #f6f8fb;
+      min-height: 100vh;
+    }
+    .header-menu {
+      display: flex;
+      justify-content: flex-start;
+      align-items: center;
+      gap: 14px;
+      background: rgba(255,255,255,0.85);
+      box-shadow: 0 2px 16px #7b4cff11;
+      padding: 0 32px;
+      height: 64px;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+    .header-menu .menu-btn {
+      background: none;
+      border: none;
+      font-size: 1.15em;
+      font-weight: 700;
+      color: #7b4cff;
+      padding: 10px 22px;
+      border-radius: 16px 16px 0 0;
+      cursor: pointer;
+      transition: background 0.18s, color 0.18s;
+      outline: none;
+    }
+    .header-menu .menu-btn.selected {
+      background: linear-gradient(90deg, #e0e7ff 60%, #f6f8fb 100%);
+      color: #3b1f7a;
+      box-shadow: 0 2px 8px #7b4cff11;
+    }
+    .header-menu .menu-btn:hover {
+      background: #ede9fe;
+      color: #3b1f7a;
+    }
+    .game-frame {
+      width: 100vw;
+      max-width: none;
+      min-height: 80vh;
+      border: none;
+      background: #f6f8fb;
+      display: block;
+      box-shadow: 0 8px 32px #7b4cff11;
+      border-radius: 0;
+      margin: 0;
+      transition: box-shadow 0.2s;
+    }
+    @media (max-width: 700px) {
+      .header-menu { flex-direction: column; height: auto; gap: 0; padding: 0 8px; }
+      .header-menu .menu-btn { width: 100%; border-radius: 0; }
+    }
+
+    /* Floating back button (outside iframe) */
+    .back-btn {
+      position: fixed;
+      top: 18px;
+      right: 20px;
+      z-index: 1000;
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 16px;
+      background: linear-gradient(90deg,#7b4cff 0%,#a084ff 100%);
+      color: #fff;
+      font-weight: 800;
+      border-radius: 14px;
+      text-decoration: none;
+      box-shadow: 0 8px 30px rgba(123,76,255,0.18);
+      transition: transform .12s ease, box-shadow .12s ease;
+      backdrop-filter: blur(6px);
+    }
+    .back-btn:hover { transform: translateY(-2px); box-shadow: 0 12px 40px rgba(123,76,255,0.22); }
+    .back-btn:active { transform: translateY(0); }
+    .back-icon { font-size: 1.1em; margin-right: 6px; display: inline-block; }
+    @media (max-width: 700px) {
+      .back-btn { top: 10px; right: 10px; padding: 8px 12px; border-radius: 10px; font-size: 0.95em; }
+    }
+  </style>
+
+  <a href="teachers.html" class="back-btn" title="Back to Teachers">
+    <span class="back-icon">←</span>
+    <span class="back-text">Back</span>
+  </a>
+
+  <div class="header-menu">
+    <button class="menu-btn selected" id="btn-wheel">Wheel</button>
+    <button class="menu-btn" id="btn-mm">Memory Match</button>
+    <button class="menu-btn" id="btn-multi">Multi Quiz Game</button>
+     <button class="menu-btn" id="btn-hangman">Hangman Game</button>
+  </div>
+  <iframe id="game-frame" class="game-frame" src="games/wheel.html"></iframe>
+  <script>
+    const btnWheel = document.getElementById('btn-wheel');
+    const btnMM = document.getElementById('btn-mm');
+    const btnMulti = document.getElementById('btn-multi');
+    const btnHang = document.getElementById('btn-hangman');
+    const frame = document.getElementById('game-frame');
+    function select(btn) {
+      document.querySelectorAll('.menu-btn').forEach(b => b.classList.remove('selected'));
+      btn.classList.add('selected');
+    }
+    btnWheel.onclick = () => {
+      frame.src = 'games/wheel.html';
+      select(btnWheel);
+    };
+    btnMM.onclick = () => {
+      frame.src = 'games/mm.html';
+      select(btnMM);
+    };
+    btnMulti.onclick = () => {
+      frame.src = 'games/multi.html';
+      select(btnMulti)
+    };
+    btnHang.onclick = () => {
+      frame.src = 'games/hang.html';
+      select(btnHang);
+    };
+  </script>
+</body>
+</html>
