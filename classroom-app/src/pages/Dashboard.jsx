@@ -60,16 +60,19 @@ export const Dashboard = () => {
         }
       `}</style>
       {/* Sidebar */}
+      <div style={{
+        width: sidebarOpen ? '240px' : '60px',
       <div className="sidebar" style={{
         background: 'rgba(255,255,255,0.72)',
         backdropFilter: 'blur(12px)',
         borderRight: '1px solid rgba(11,18,32,0.06)',
-        padding: '20px',
+        padding: sidebarOpen ? '20px' : '20px 10px',
         position: 'fixed',
         height: '100vh',
         display: 'flex',
         flexDirection: 'column',
         zIndex: 100,
+        transition: 'width 0.3s ease'
         transition: 'transform 0.3s ease'
       }}>
         <div style={{ marginBottom: '24px' }}>
@@ -240,6 +243,7 @@ export const Dashboard = () => {
   </div>
 
   {/* Main Content */}
+  <div style={{ flex: 1, marginLeft: sidebarOpen ? '240px' : '60px', transition: 'margin-left 0.3s ease' }}>
   <div className="main-content" style={{ flex: 1 }}>
     <header style={{
       padding: '20px 30px',
@@ -255,7 +259,6 @@ export const Dashboard = () => {
           onClick={() => setSidebarOpen(!sidebarOpen)}
           className="hamburger-menu"
           style={{
-            display: 'none',
             width: '44px',
             height: '44px',
             borderRadius: '10px',
@@ -265,7 +268,8 @@ export const Dashboard = () => {
             alignItems: 'center',
             justifyContent: 'center',
             cursor: 'pointer',
-            color: '#6b46ff'
+            color: '#6b46ff',
+            display: 'flex'
           }}
         >
           <svg width="18" height="14" viewBox="0 0 18 14" xmlns="http://www.w3.org/2000/svg">
