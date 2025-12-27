@@ -1,11 +1,15 @@
-```
+```gitignore
 # Dependencies
 node_modules/
 
 # Build artifacts
 dist/
 build/
-*.js.map
+*.js
+
+# Logs and temp files
+*.log
+*.tmp
 
 # Environment
 .env
@@ -21,33 +25,6 @@ __pycache__/
 *.pyc
 *.pyo
 *.pyd
-
-# Logs
-*.log
-
-# OS
-.DS_Store
-Thumbs.db
-
-# Coverage
-coverage/
-htmlcov/
-.coverage
-
-# Temporary files
-*.tmp
-*.swp
-*.swo
-
-# Compiled files
-*.o
-*.obj
-*.out
-*.class
-*.exe
-*.dll
-*.so
-*.a
 
 # Compressed files
 *.zip
@@ -72,10 +49,4 @@ htmlcov/
 *.tar.bz2
 *.tar.xz
 *.tar.zst
-
-# Cache directories
-.mypy_cache/
-.pytest_cache/
-.target/
-.gradle/
 ```
