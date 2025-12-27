@@ -222,7 +222,7 @@ export const Landing = () => {
                 cursor: 'pointer'
               }}
               onMouseEnter={(e) => e.target.style.transform = 'scale(1.04)'}
-              onMouseLeave={(e) => e.target.style.transform = 'scale(1)'} />
+              onMouseLeave={(e) => e.target.style.transform = 'scale(1)'}
             >
               Sign Up
             </button>
@@ -286,7 +286,7 @@ export const Landing = () => {
                 fontSize: '16px'
               }}
               onMouseEnter={(e) => e.target.style.transform = 'scale(1.04)'}
-              onMouseLeave={(e) => e.target.style.transform = 'scale(1)'} />
+              onMouseLeave={(e) => e.target.style.transform = 'scale(1)'}
             >
               Get Started — it's free
             </button>
