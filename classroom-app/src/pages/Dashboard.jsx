@@ -60,9 +60,8 @@ export const Dashboard = () => {
         }
       `}</style>
       {/* Sidebar */}
-      <div style={{
-        width: sidebarOpen ? '240px' : '60px',
       <div className="sidebar" style={{
+        width: sidebarOpen ? '240px' : '60px',
         background: 'rgba(255,255,255,0.72)',
         backdropFilter: 'blur(12px)',
         borderRight: '1px solid rgba(11,18,32,0.06)',
@@ -72,9 +71,8 @@ export const Dashboard = () => {
         display: 'flex',
         flexDirection: 'column',
         zIndex: 100,
-        transition: 'width 0.3s ease'
-        transition: 'transform 0.3s ease'
-      }}>
+        transition: 'width 0.3s ease, transform 0.3s ease'
+      }>
         <div style={{ marginBottom: '24px' }}>
           <div style={{
             display: 'flex',
