@@ -7,6 +7,13 @@ export const Dashboard = () => {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
 
+  const getSidebarClass = () => {
+    if (typeof window !== 'undefined' && window.innerWidth <= 768) {
+      return `sidebar ${sidebarOpen ? 'expanded' : 'collapsed'}`;
+    }
+    return 'sidebar';
+  };
+
   const handleSignOut = async () => {
     await signOut();
     navigate('/');
@@ -20,13 +27,19 @@ export const Dashboard = () => {
       color: '#0b1220',
       background: 'radial-gradient(1200px 600px at 10% 10%, rgba(123,76,255,0.06), transparent 20%), linear-gradient(180deg,#f7fbff,#fff8ff)'
     }}>
-      <style>{`
+      <style>
+        {`
         @media (max-width: 768px) {
           .sidebar {
-            width: 240px;
-            transform: ${sidebarOpen ? 'translateX(0)' : 'translateX(-100%)'};
+            width: 240px !important;
             left: 0;
             z-index: 1000;
+          }
+          .sidebar.collapsed {
+            transform: translateX(-100%) !important;
+          }
+          .sidebar.expanded {
+            transform: translateX(0) !important;
           }
           .main-content {
             margin-left: 0;
@@ -58,9 +71,10 @@ export const Dashboard = () => {
         .signout-hover:hover {
           background: rgba(239,68,68,0.06) !important;
         }
-      `}</style>
+      `}
+      </style>
       {/* Sidebar */}
-      <div className="sidebar" style={{
+      <div className={getSidebarClass()} style={{
         width: sidebarOpen ? '240px' : '60px',
         background: 'rgba(255,255,255,0.72)',
         backdropFilter: 'blur(12px)',
@@ -72,7 +86,7 @@ export const Dashboard = () => {
         flexDirection: 'column',
         zIndex: 100,
         transition: 'width 0.3s ease, transform 0.3s ease'
-      }>
+      }}>
         <div style={{ marginBottom: '24px' }}>
           <div style={{
             display: 'flex',
@@ -418,6 +432,7 @@ export const Dashboard = () => {
       </div>
     </main>
   </div>
+</div>
 </div>
 );
 };
